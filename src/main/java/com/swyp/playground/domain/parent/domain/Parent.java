@@ -19,4 +19,8 @@ public class Parent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "parent_id")
     private Long parentId;
+
+    @Column
+    private Long name;
+
 }
