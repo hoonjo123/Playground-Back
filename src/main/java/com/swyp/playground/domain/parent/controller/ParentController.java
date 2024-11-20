@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ParentController {
     @GetMapping("/test")
     public String test(){
-        return "스위프";
+        return "1123123213123123231231231";
     }
 }
