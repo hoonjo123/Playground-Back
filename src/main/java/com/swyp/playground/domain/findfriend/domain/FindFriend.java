@@ -14,37 +14,37 @@ public class FindFriend {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "FIND_FRIEND_ID")
+    @Column(name = "find_friend_id")
     private Long findFriendId;
 
-    @Column(name = "PLAYGROUND_NAME")
+    @Column(name = "playground_name")
     private String playgroundName;
 
-    @Column(name = "NICKNAME")
+    @Column(name = "nickname")
     private String nickname;
 
-    @Column(name = "AGE")
+    @Column(name = "age")
     private Integer age;
 
-    @Column(name = "START_TIME")
+    @Column(name = "start_time")
     private LocalDateTime startTime;
 
-    @Column(name = "END_TIME")
+    @Column(name = "end_time")
     private LocalDateTime endTime;
 
-    @Column(name = "MINIMUM_COUNT")
+    @Column(name = "minimum_count")
     private Integer minimumCount;
 
-    @Column(name = "FRIENDS_COUNT")
+    @Column(name = "friends_count")
     private Integer friendsCount;
 
-    @Column(name = "CURRENT_COUNT")
+    @Column(name = "current_count")
     private Integer currentCount;
 
-    @Column(name = "STATUS")
+    @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private RecruitmentStatus status;
 
-    @Column(name = "DESCRIPTION")
+    @Column(name = "description")
     private String description;
 }
