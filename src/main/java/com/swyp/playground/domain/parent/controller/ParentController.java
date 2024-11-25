@@ -1,14 +1,23 @@
 package com.swyp.playground.domain.parent.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.swyp.playground.domain.parent.dto.req.ParentCreateReqDto;
+import com.swyp.playground.domain.parent.dto.res.ParentCreateResDto;
+import com.swyp.playground.domain.parent.service.ParentService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/oauth")
+@RequiredArgsConstructor
 public class ParentController {
-    @GetMapping("/test")
-    public String test(){
-        return "1123123213123123231231231";
+
+    private final ParentService parentService;
+
+    @PostMapping("/signup")
+    public ResponseEntity<ParentCreateResDto> signUp(@Validated @RequestBody ParentCreateReqDto request) {
+        ParentCreateResDto response = parentService.signUp(request);
+        return ResponseEntity.ok(response);
     }
 }
