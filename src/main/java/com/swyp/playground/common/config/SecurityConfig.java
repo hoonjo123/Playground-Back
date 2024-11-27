@@ -37,7 +37,7 @@ public class SecurityConfig {
                                 "/auth/signup",
                                 "/auth/login",
                                 "/auth/logout",
-                                "/find-friend/**"
+                                "/find-friend/**",
                                 "/playgrounds/**").permitAll()
                         .requestMatchers("/auth/users/**").authenticated()
                         .anyRequest().authenticated()
