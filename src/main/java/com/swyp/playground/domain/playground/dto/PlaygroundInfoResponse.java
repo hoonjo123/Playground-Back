@@ -21,13 +21,15 @@ public class PlaygroundInfoResponse {
     public static class Playground {
 
         @Builder
-        public Playground(String name, String address, String latitude, String longitude) {
+        public Playground(String id, String name, String address, String latitude, String longitude) {
+            this.id = id;
             this.name = name;
             this.address = address;
             this.latitude = latitude;
             this.longitude = longitude;
         }
 
+        private String id;
         private String name;
         private String address;
         private String latitude;

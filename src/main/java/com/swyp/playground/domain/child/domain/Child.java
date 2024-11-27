@@ -1,5 +1,6 @@
 package com.swyp.playground.domain.child.domain;
 
+import com.swyp.playground.domain.findfriend.domain.FindFriend;
 import com.swyp.playground.domain.parent.domain.Parent;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -31,4 +32,8 @@ public class Child {
 
     @Column(name = "age", nullable = false)
     private Integer age;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "find_friend_id")
+    private FindFriend findFriend;
 }
