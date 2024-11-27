@@ -31,14 +31,17 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/oauth/login/**"
-                                , "/oauth/signup/**"
-                                , "/oauth/logout")
-                        .permitAll()
+                        .requestMatchers("/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/auth/signup",
+                                "/auth/login",
+                                "/auth/logout").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthFilter(tokenProvider, redisService),
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
 }
