@@ -5,6 +5,7 @@ import com.swyp.playground.domain.playground.dto.PlaygroundInfoResponse;
 import com.swyp.playground.domain.playground.exception.PlaygroundNotFoundException;
 import com.swyp.playground.domain.playground.service.PlaygroundService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class playgroundController {
 
     @Value("${api.key}")
@@ -30,7 +32,6 @@ public class playgroundController {
     //놀이터 검색
     @GetMapping("/playgrounds")
     public ResponseEntity<PlaygroundInfoResponse> getPlaygroundInfo(@RequestParam String pfctNm) throws URISyntaxException {
-
         //페이지 번호
         int pageIndex = 1;
 
@@ -55,7 +56,6 @@ public class playgroundController {
         ApiResponse externalResponse = restTemplate.getForObject(uri, ApiResponse.class);
 
         if (externalResponse.getResponse().getBody().getTotalCnt() == 0) {
-            System.out.println("hi");
             throw new PlaygroundNotFoundException("검색하신 놀이터가 존재하지 않습니다.");
         }
 
