@@ -10,6 +10,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -25,6 +27,11 @@ public class ParentController {
     @GetMapping("/users/{id}")
     public ResponseEntity<ParentCreateResDto> getParentById(@PathVariable Long id){
         ParentCreateResDto response = parentService.getParentById(id);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/users/all")
+    public ResponseEntity<List<ParentCreateResDto>> getAllParents() {
+        List<ParentCreateResDto> response = parentService.getAllParents();
         return ResponseEntity.ok(response);
     }
 }

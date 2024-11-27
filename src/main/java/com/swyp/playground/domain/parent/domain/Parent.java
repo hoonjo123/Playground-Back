@@ -58,7 +58,7 @@ public class Parent {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Child> children = new ArrayList<>();
 
-    @Column(name = "introduce", length = 500)
+    @Column(name = "introduce", length = 5000)
     private String introduce;
 
     @Column(name = "joined_at", nullable = false)

@@ -40,6 +40,7 @@ public class TypeChange {
                 .introduce(parent.getIntroduce())
                 .childCount(parent.getChildCount())
                 .birthDate(parent.getBirthDate())
+                .mannerTemp(parent.getMannerTemp())
                 .build();
     }
 }
