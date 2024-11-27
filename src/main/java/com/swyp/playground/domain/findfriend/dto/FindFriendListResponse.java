@@ -1,9 +1,5 @@
 package com.swyp.playground.domain.findfriend.dto;
 
-
-import com.swyp.playground.domain.findfriend.domain.RecruitmentStatus;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Enumerated;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

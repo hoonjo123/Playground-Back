@@ -22,6 +22,9 @@ public class FindFriend {
     @Column(name = "find_friend_id")
     private Long findFriendId;
 
+    @Column(name = "playground_id")
+    private String playgroundId;
+
     @Column(name = "playground_name")
     private String playgroundName;
 

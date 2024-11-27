@@ -22,6 +22,7 @@ public class PlaygroundService {
                 continue;
             }
             playgroundInfoResponse.getPlaygrounds().add(PlaygroundInfoResponse.Playground.builder()
+                    .id(item.getPfctSn())
                     .name(item.getPfctNm())
                     .address(item.getRonaAddr())
                     .latitude(item.getLatCrtsVl())

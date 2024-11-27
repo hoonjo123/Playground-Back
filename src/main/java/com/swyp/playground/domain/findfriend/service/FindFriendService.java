@@ -27,8 +27,8 @@ public class FindFriendService {
 
 
     //놀이터 친구 모집글 목록 반환
-    public List<FindFriendListResponse> getFindFriendList(String playgroundName) {
-        List<FindFriend> findFriendList = findFriendRepository.findAllByPlaygroundName(playgroundName);
+    public List<FindFriendListResponse> getFindFriendList(String playgroundId) {
+        List<FindFriend> findFriendList = findFriendRepository.findAllByPlaygroundId(playgroundId);
         return findFriendList.stream()
                 .map(f -> FindFriendListResponse.builder()
                         .title(f.getPlaygroundName())
@@ -54,13 +54,14 @@ public class FindFriendService {
 
 
     //친구 모집글 등록
-    public Long registerFindFriend(String playgroundName, FindFriendRegisterRequest findFriendRegisterRequest) {
+    public Long registerFindFriend(String playgroundId, FindFriendRegisterRequest findFriendRegisterRequest) {
         LocalDateTime startTime = findFriendRegisterRequest.getStartTime();
         LocalDateTime endTime = startTime.plusMinutes(findFriendRegisterRequest.getDuration());
 
         // FindFriend 엔티티 객체 생성
         FindFriend findFriend = FindFriend.builder()
-                .playgroundName(playgroundName)
+                .playgroundId(playgroundId)
+                .playgroundName(findFriendRegisterRequest.getPlaygroundName())
                 .title(findFriendRegisterRequest.getTitle())
                 .startTime(startTime)
                 .endTime(endTime)

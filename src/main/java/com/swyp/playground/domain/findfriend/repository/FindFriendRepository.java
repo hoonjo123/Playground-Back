@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface FindFriendRepository extends JpaRepository<FindFriend, Long> {
-    List<FindFriend> findAllByPlaygroundName(String playgroundName);
+    List<FindFriend> findAllByPlaygroundId(String playgroundId);
 }
