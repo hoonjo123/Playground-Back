@@ -22,9 +22,9 @@ public class ParentController {
         ParentCreateResDto response = parentService.signUp(request);
         return ResponseEntity.ok(response);
     }
-//    @GetMapping("/details/")
-//    public ResponseEntity<CommonResponse> getAllMemberList(
-//            @AuthenticationPrincipal
-//    )
-
+    @GetMapping("/users/{id}")
+    public ResponseEntity<ParentCreateResDto> getParentById(@PathVariable Long id){
+        ParentCreateResDto response = parentService.getParentById(id);
+        return ResponseEntity.ok(response);
+    }
 }

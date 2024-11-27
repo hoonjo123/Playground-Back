@@ -37,6 +37,7 @@ public class SecurityConfig {
                                 "/auth/signup",
                                 "/auth/login",
                                 "/auth/logout").permitAll()
+                        .requestMatchers("/auth/users/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthFilter(tokenProvider, redisService),

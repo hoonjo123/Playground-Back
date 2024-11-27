@@ -23,4 +23,10 @@ public class ParentService {
 
         return typeChange.parentToParentCreateResDto(savedParent);
     }
+
+    public ParentCreateResDto getParentById(Long id){
+        Parent parent = parentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + id));
+        return typeChange.parentToParentCreateResDto(parent);
+    }
 }
