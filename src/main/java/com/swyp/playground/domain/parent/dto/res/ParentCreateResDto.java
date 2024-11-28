@@ -4,6 +4,7 @@ import com.swyp.playground.domain.parent.domain.ParentRoleType;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -18,6 +19,5 @@ public class ParentCreateResDto {
     private LocalDate birthDate;
     private ParentRoleType role;
     private Integer childCount;
-
-
+    private BigDecimal mannerTemp;
 }
