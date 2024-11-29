@@ -11,13 +11,18 @@ import lombok.Setter;
 public class FindFriendListResponse {
 
     @Builder
-    public FindFriendListResponse(String title, String description, String scheduleTime, String recruitmentStatus, Integer currentCount) {
+    public FindFriendListResponse(Long id, String playgroundName, String title, String description, String scheduleTime, String recruitmentStatus, Integer currentCount) {
+        this.id = id;
+        this.playgroundName = playgroundName;
         this.title = title;
         this.description = description;
         this.scheduleTime = scheduleTime;
         this.recruitmentStatus = recruitmentStatus;
         this.currentCount = currentCount;
     }
+    private Long id;
+
+    private String playgroundName;
 
     private String title;
 

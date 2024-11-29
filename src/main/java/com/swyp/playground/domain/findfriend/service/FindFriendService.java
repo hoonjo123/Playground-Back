@@ -3,9 +3,9 @@ package com.swyp.playground.domain.findfriend.service;
 import com.swyp.playground.domain.child.repository.ChildRepository;
 import com.swyp.playground.domain.findfriend.domain.FindFriend;
 import com.swyp.playground.domain.findfriend.domain.RecruitmentStatus;
-import com.swyp.playground.domain.findfriend.dto.FindFriendListResponse;
-import com.swyp.playground.domain.findfriend.dto.FindFriendRegisterRequest;
+import com.swyp.playground.domain.findfriend.dto.*;
 import com.swyp.playground.domain.findfriend.repository.FindFriendRepository;
+import com.swyp.playground.domain.parent.domain.Parent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,7 +32,9 @@ public class FindFriendService {
         List<FindFriend> findFriendList = findFriendRepository.findAllByPlaygroundId(playgroundId);
         return findFriendList.stream()
                 .map(f -> FindFriendListResponse.builder()
-                        .title(f.getPlaygroundName())
+                        .id(f.getFindFriendId())
+                        .playgroundName(f.getPlaygroundName())
+                        .title(f.getTitle())
                         .description(f.getDescription())
                         .scheduleTime(formatSchedule(f.getStartTime(), f.getEndTime())) //포맷팅 시간으로 변경하여 추가
                         .recruitmentStatus(f.getStatus().name())
@@ -40,16 +43,43 @@ public class FindFriendService {
                 .collect(Collectors.toList());
     }
 
+    public FindFriendInfoResponse getFindFriendInfo(Long findFriendId) {
+        FindFriend findFriend = findFriendRepository.findById(findFriendId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 친구 모집글을 찾을 수 없습니다."));
+        List<Parent> participants = findFriend.getParticipants();
+
+        return FindFriendInfoResponse.builder()
+                .playgroundName(findFriend.getPlaygroundName())
+                .recruitmentStatus(findFriend.getStatus().name())
+                .title(findFriend.getTitle())
+                .description(findFriend.getDescription())
+                .scheduleTime(formatSchedule(findFriend.getStartTime(), findFriend.getEndTime()))
+                .owner(FindFriendOwnerInfoResponse.builder()
+                        .nickname(findFriend.getOwner().getNickname())
+                        .role(findFriend.getOwner().getRole().name())
+                        .address(findFriend.getOwner().getAddress())
+                        .build()
+                )
+                .participants(findFriend.getParticipants().stream()
+                        .map(participant -> FindFriendParticipantsListResponse.builder()
+                                .nickname(participant.getNickname())
+                                .build()
+                        )
+                        .toList()
+                )
+                .build();
+    }
+
     //LocalDateTime을 포맷팅
     private String formatSchedule(LocalDateTime startTime, LocalDateTime endTime) {
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy. MM. dd. EEEE", Locale.KOREAN);
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy. MM. dd EEEE", Locale.KOREAN);
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("a h:mm", Locale.KOREAN);
 
         String startDate = startTime.format(dateFormatter);
         String startTimeFormatted = startTime.format(timeFormatter).replace("AM", "오전").replace("PM", "오후");
         String endTimeFormatted = endTime.format(timeFormatter).replace("AM", "오전").replace("PM", "오후");
 
-        return startDate + " " + startTimeFormatted + " ~ " + endTimeFormatted;
+        return startDate + " " + startTimeFormatted + "~" + endTimeFormatted;
     }
 
 

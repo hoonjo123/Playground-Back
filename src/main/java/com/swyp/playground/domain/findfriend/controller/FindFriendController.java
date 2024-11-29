@@ -1,5 +1,6 @@
 package com.swyp.playground.domain.findfriend.controller;
 
+import com.swyp.playground.domain.findfriend.dto.FindFriendInfoResponse;
 import com.swyp.playground.domain.findfriend.dto.FindFriendListResponse;
 import com.swyp.playground.domain.findfriend.dto.FindFriendRegisterRequest;
 import com.swyp.playground.domain.findfriend.service.FindFriendService;
@@ -24,6 +25,13 @@ public class FindFriendController {
     public ResponseEntity<Result> findFindFriendList(@PathVariable String playgroundId) {
         List<FindFriendListResponse> findFriendList = findFriendService.getFindFriendList(playgroundId);
         return ResponseEntity.ok(new Result<>(findFriendList));
+    }
+
+    //친구 모집글 정보 조회
+    @GetMapping("/find-friend/{playgroundId}/{findFriendId}")
+    public ResponseEntity<FindFriendInfoResponse> findFindFriendInfo(@PathVariable String playgroundId, @PathVariable Long findFriendId) {
+        FindFriendInfoResponse findFriendInfo = findFriendService.getFindFriendInfo(findFriendId);
+        return ResponseEntity.ok(findFriendInfo);
     }
 
     //친구 모집글 등록

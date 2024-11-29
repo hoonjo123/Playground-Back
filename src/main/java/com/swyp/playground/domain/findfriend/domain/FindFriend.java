@@ -1,8 +1,11 @@
 package com.swyp.playground.domain.findfriend.domain;
 
 import com.swyp.playground.domain.child.domain.Child;
+import com.swyp.playground.domain.findfriend.dto.FindFriendRegisterRequest;
+import com.swyp.playground.domain.parent.domain.Parent;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,12 +34,6 @@ public class FindFriend {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "nickname")
-    private String nickname;
-
-    @Column(name = "age")
-    private Integer age;
-
     @Column(name = "start_time")
     private LocalDateTime startTime;
 
@@ -53,11 +50,19 @@ public class FindFriend {
     @Column(name = "description")
     private String description;
 
-    @OneToMany(mappedBy = "findFriend", cascade = CascadeType.PERSIST)
-    private List<Child> children = new ArrayList<>();
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "parent_id")
+    private Parent owner;
 
-    public void registerChild(Child child) {
-        children.add(child);
-        child.setFindFriend(this);
+    @OneToMany(mappedBy = "findFriend")
+    private List<Parent> participants = new ArrayList<>();
+
+    public void registerParent(Parent parent) {
+        participants.add(parent);
+        parent.setFindFriend(this);
+    }
+
+    public void setOwner(Parent parent){
+        this.owner = parent;
     }
 }
