@@ -7,11 +7,14 @@ import com.swyp.playground.domain.findfriend.dto.*;
 import com.swyp.playground.domain.findfriend.repository.FindFriendRepository;
 import com.swyp.playground.domain.parent.domain.Parent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class FindFriendService {
 
     private final FindFriendRepository findFriendRepository;
@@ -135,7 +139,27 @@ public class FindFriendService {
         return getFindFriendInfo(findFriendId);
     }
 
+    //친구 모집글 삭제
     public void deleteFindFriend(Long findFriendId) {
         findFriendRepository.deleteById(findFriendId);
+    }
+
+    //일정 시간마다 친구 모집글 확인(시작 시간에서 10분이 지나면 친구 모집글 상태를 노는중으로 변경
+    // 10초마다 상태 업데이트
+    @Scheduled(fixedRate = 10000)
+    public void updateFindFriendStatus() {
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+
+        // 상태가 RECRUITING이고 startTime으로부터 10분이 지난 항목을 COMPLETE로 변경
+        List<FindFriend> toComplete = findFriendRepository.findByStatusAndStartTimeBefore(RecruitmentStatus.RECRUITING, now.minusMinutes(10));
+        for (FindFriend findFriend : toComplete) {
+            findFriend.setStatus(RecruitmentStatus.PLAYING);
+        }
+
+        // 상태가 PLAYING이고 endTime이 지난 항목을 CLOSED로 변경
+        List<FindFriend> toClose = findFriendRepository.findByStatusAndEndTimeBefore(RecruitmentStatus.PLAYING, now);
+        for (FindFriend findFriend : toClose) {
+            findFriend.setStatus(RecruitmentStatus.COMPLETE);
+        }
     }
 }
