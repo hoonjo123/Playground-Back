@@ -32,8 +32,4 @@ public class Child {
 
     @Column(name = "age", nullable = false)
     private Integer age;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "find_friend_id")
-    private FindFriend findFriend;
 }

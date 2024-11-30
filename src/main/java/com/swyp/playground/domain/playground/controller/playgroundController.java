@@ -63,6 +63,4 @@ public class playgroundController {
 
         return ResponseEntity.ok(playgroundInfoResponse);
     }
-
-
 }
