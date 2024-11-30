@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -43,6 +44,7 @@ public class FindFriendService {
                 .collect(Collectors.toList());
     }
 
+    //친구 모집글 정보 조회
     public FindFriendInfoResponse getFindFriendInfo(Long findFriendId) {
         FindFriend findFriend = findFriendRepository.findById(findFriendId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 친구 모집글을 찾을 수 없습니다."));
@@ -101,5 +103,39 @@ public class FindFriendService {
                 .build();
 
         return findFriendRepository.save(findFriend).getFindFriendId();
+    }
+
+    //친구 모집글 수정
+    public FindFriendInfoResponse modifyFindFriendInfo(String playgroundId, Long findFriendId, FindFriendModifyRequest findFriendModifyRequest) {
+        // 모집글 조회
+        FindFriend findFriend = findFriendRepository.findById(findFriendId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 모집글을 찾을 수 없습니다."));
+
+        // 놀이터 ID 검증
+        if (!findFriend.getPlaygroundId().equals(playgroundId)) {
+            throw new IllegalArgumentException("잘못된 놀이터 ID입니다.");
+        }
+
+        // 필드 수정 (Dirty Checking)
+        if (findFriendModifyRequest.getTitle() != null) {
+            findFriend.setTitle(findFriendModifyRequest.getTitle());
+        }
+        if (findFriendModifyRequest.getDescription() != null) {
+            findFriend.setDescription(findFriendModifyRequest.getDescription());
+        }
+        if (findFriendModifyRequest.getStartTime() != null) {
+            LocalDateTime startTime = findFriendModifyRequest.getStartTime();
+            findFriend.setStartTime(startTime);
+        }
+        if(findFriendModifyRequest.getDuration() != null){
+            LocalDateTime startTime = findFriend.getStartTime();
+            findFriend.setEndTime(startTime.plusMinutes(findFriendModifyRequest.getDuration()));
+        }
+
+        return getFindFriendInfo(findFriendId);
+    }
+
+    public void deleteFindFriend(Long findFriendId) {
+        findFriendRepository.deleteById(findFriendId);
     }
 }

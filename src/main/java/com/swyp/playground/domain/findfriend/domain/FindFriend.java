@@ -13,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -28,6 +29,7 @@ public class FindFriend {
     @Column(name = "playground_id")
     private String playgroundId;
 
+    @Setter
     @Column(name = "playground_name")
     private String playgroundName;
 
@@ -62,7 +64,5 @@ public class FindFriend {
         parent.setFindFriend(this);
     }
 
-    public void setOwner(Parent parent){
-        this.owner = parent;
-    }
+
 }
