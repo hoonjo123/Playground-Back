@@ -1,12 +1,14 @@
 package com.swyp.playground.common.jwt;
 
 import io.jsonwebtoken.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
 @Component
+@Slf4j
 public class JwtTokenProvider {
 
     @Value("${jwt.secret:default-secret-key}")
@@ -20,18 +22,20 @@ public class JwtTokenProvider {
 
 
     // JWT 생성
-    public String generateToken(String email) {
+    public String generateToken(String email,String nickname) {
         return Jwts.builder()
                 .setSubject(email)
+                .claim("nickname",nickname)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
 
-    public String generateRefreshToken(String email) {
+    public String generateRefreshToken(String email,String nickname) {
         return Jwts.builder()
                 .setSubject(email)
+                .claim("nickname",nickname)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + refreshExpiration))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
@@ -41,14 +45,16 @@ public class JwtTokenProvider {
     // JWT 검증
     public boolean validateToken(String token) {
         try {
-            System.out.println("인증된 토큰: " + token); // 토큰 출력
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            System.out.println("인증불가 토큰: " + token);
-            e.printStackTrace();
-            return false;
+        } catch (ExpiredJwtException e) {
+            log.error("토큰 만료: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            log.error("잘못된 토큰: {}", e.getMessage());
+        } catch (SignatureException e) {
+            log.error("서명 검증 실패: {}", e.getMessage());
         }
+        return false;
     }
 
     // JWT에서 이메일 추출
@@ -58,5 +64,12 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
+    }
+    public String getNicknameFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("nickname", String.class);
     }
 }

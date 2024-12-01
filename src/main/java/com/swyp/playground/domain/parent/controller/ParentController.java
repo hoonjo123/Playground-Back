@@ -6,6 +6,7 @@ import com.swyp.playground.domain.parent.dto.req.ParentCreateReqDto;
 import com.swyp.playground.domain.parent.dto.req.ParentUpdateReqDto;
 import com.swyp.playground.domain.parent.dto.res.ParentCreateResDto;
 import com.swyp.playground.domain.parent.service.ParentService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,17 +27,21 @@ public class ParentController {
         ParentCreateResDto response = parentService.signUp(request);
         return ResponseEntity.ok(response);
     }
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/users/{id}")
     public ResponseEntity<ParentCreateResDto> getParentById(@PathVariable Long id){
         ParentCreateResDto response = parentService.getParentById(id);
         return ResponseEntity.ok(response);
     }
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/users/edit/{id}")
     public ResponseEntity<ParentCreateResDto> updateParent(@PathVariable Long id,
                                                            @Validated @RequestBody ParentUpdateReqDto request) {
         ParentCreateResDto response = parentService.updateParent(id, request);
         return ResponseEntity.ok(response);
     }
+
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/users/all")
     public ResponseEntity<List<ParentCreateResDto>> getAllParents() {
         List<ParentCreateResDto> response = parentService.getAllParents();
