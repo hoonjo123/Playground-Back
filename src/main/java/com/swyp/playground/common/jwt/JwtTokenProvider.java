@@ -41,11 +41,11 @@ public class JwtTokenProvider {
     // JWT 검증
     public boolean validateToken(String token) {
         try {
-            System.out.println("Validating Token: " + token); // 토큰 출력
+            System.out.println("인증된 토큰: " + token); // 토큰 출력
             Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            System.out.println("Invalid Token: " + token);
+            System.out.println("인증불가 토큰: " + token);
             e.printStackTrace();
             return false;
         }

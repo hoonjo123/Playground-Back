@@ -1,42 +1,46 @@
 package com.swyp.playground.domain.findfriend.domain;
 
+import com.swyp.playground.domain.child.domain.Child;
+import com.swyp.playground.domain.findfriend.dto.FindFriendRegisterRequest;
+import com.swyp.playground.domain.parent.domain.Parent;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class FindFriend {
+
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "find_friend_id")
     private Long findFriendId;
 
+    @Column(name = "playground_id")
+    private String playgroundId;
+
+    @Setter
     @Column(name = "playground_name")
     private String playgroundName;
 
-    @Column(name = "nickname")
-    private String nickname;
-
-    @Column(name = "age")
-    private Integer age;
+    @Column(name = "title")
+    private String title;
 
     @Column(name = "start_time")
     private LocalDateTime startTime;
 
     @Column(name = "end_time")
     private LocalDateTime endTime;
-
-    @Column(name = "minimum_count")
-    private Integer minimumCount;
-
-    @Column(name = "friends_count")
-    private Integer friendsCount;
 
     @Column(name = "current_count")
     private Integer currentCount;
@@ -47,4 +51,18 @@ public class FindFriend {
 
     @Column(name = "description")
     private String description;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "parent_id")
+    private Parent owner;
+
+    @OneToMany(mappedBy = "findFriend")
+    private List<Parent> participants = new ArrayList<>();
+
+    public void registerParent(Parent parent) {
+        participants.add(parent);
+        parent.setFindFriend(this);
+    }
+
+
 }

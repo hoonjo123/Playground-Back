@@ -1,6 +1,7 @@
 package com.swyp.playground.domain.parent.domain;
 
 import com.swyp.playground.domain.child.domain.Child;
+import com.swyp.playground.domain.findfriend.domain.FindFriend;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -58,7 +59,7 @@ public class Parent {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Child> children = new ArrayList<>();
 
-    @Column(name = "introduce", length = 500)
+    @Column(name = "introduce", length = 5000)
     private String introduce;
 
     @Column(name = "joined_at", nullable = false)
@@ -66,6 +67,10 @@ public class Parent {
 
     @Column(name = "manner_temp", precision = 5, scale = 2, nullable = false)
     private BigDecimal mannerTemp;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "find_friend_id")
+    private FindFriend findFriend;
 
 
     public void addChild(Child child) {

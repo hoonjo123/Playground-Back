@@ -35,6 +35,12 @@ public class TypeChange {
                 .name(parent.getName())
                 .email(parent.getEmail())
                 .nickname(parent.getNickname())
+                .address(parent.getAddress())
+                .role(parent.getRole())
+                .introduce(parent.getIntroduce())
+                .childCount(parent.getChildCount())
+                .birthDate(parent.getBirthDate())
+                .mannerTemp(parent.getMannerTemp())
                 .build();
     }
 }

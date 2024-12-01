@@ -15,15 +15,6 @@ public class CommonResponse {
     private String message;
 //
 //    @Schema(description = "반환 오브젝트", anyOf = {
-//            AnswerResDto.class,
-//            BoardResDto.class,
-//            ContractResDto.class,
-//            SimpleListDTO.class,
-//            LoginResDto.class,
-//            SalesMemberResDto.class,
-//            NotificationResDto.class,
-//            ScheduleReqDto.class,
-//            TeamResDto.class
 //    })
     private Object result;
 
