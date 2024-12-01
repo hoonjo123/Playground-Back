@@ -33,7 +33,7 @@ public class NoteController {
     @Autowired
     private NoteService noteService;
 
-    private final RedisService redisService;
+    private RedisService redisService;
 
     // -- GET --
     @GetMapping("/all")
