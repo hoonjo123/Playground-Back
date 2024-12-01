@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +16,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+
+@Slf4j
 
 public class JwtAuthFilter extends OncePerRequestFilter {
 
@@ -40,9 +43,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String refreshToken = resolveRefreshToken(request);
                 if (refreshToken != null && tokenProvider.validateToken(refreshToken)) {
                     String email = tokenProvider.getEmailFromToken(refreshToken);
+                    String nickname = tokenProvider.getNicknameFromToken(refreshToken);
                     if (redisService.isTokenValid(refreshToken)) {
                         // 새 액세스 토큰 발급
-                        String newAccessToken = tokenProvider.generateToken(email);
+                        String newAccessToken = tokenProvider.generateToken(email,nickname);
                         response.setHeader("Access-Token", newAccessToken);
                         authenticateUser(newAccessToken);
                     } else {
@@ -66,8 +70,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private void authenticateUser(String token) {
         String email = tokenProvider.getEmailFromToken(token);
+        String nickname = tokenProvider.getNicknameFromToken(token);
         UserDetails userDetails = new User(email, "", Collections.emptyList());
-        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, nickname, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
@@ -82,6 +87,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
+        log.debug("Authorization 헤더: {}", bearerToken);
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
@@ -90,6 +96,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private String resolveRefreshToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Refresh-Token");
+        log.debug("Refresh-Token 헤더: {}", bearerToken);
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }

@@ -36,13 +36,7 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/auth/signup",
                                 "/auth/login",
-                                "/auth/logout",
-                                "/find-friend/**",
-                                "/playgrounds/**",
-                                "/note/**",
-                                "/comment/**",
-                                "/auth/send-email").permitAll()
-                        .requestMatchers("/auth/users/**").authenticated()
+                                "/auth/logout").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthFilter(tokenProvider, redisService),

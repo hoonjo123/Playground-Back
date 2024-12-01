@@ -35,28 +35,39 @@ public class LoginService {
         }
 
         // JWT 토큰 생성
-        String token = tokenProvider.generateToken(email);
-        String refreshToken = tokenProvider.generateRefreshToken(email);
-
+        String nickname = parent.getNickname(); // Parent 객체에서 닉네임 가져오기
+        String token = tokenProvider.generateToken(email, nickname);
+        String refreshToken = tokenProvider.generateRefreshToken(email, nickname);
 
         // Redis에 토큰 저장
-        redisService.saveToken(token, email, 3600000); // 1시간 유지
-        redisService.saveToken("refresh_" + email, refreshToken, 604800000);  // 7일 유지
+        redisService.saveAccessToken(email, nickname, token, 3600000); // Access Token: 1시간 유지
+        redisService.saveRefreshToken(email, refreshToken, 604800000); // Refresh Token: 7일 유지
+        // 7일 유지
 
         return LoginResDto.builder()
                 .email(email)
+                .nickname(parent.getNickname())
                 .token(token)
                 .refreshToken(refreshToken)
                 .build();
     }
 
     public void logout(String token) {
+        // Access Token에서 이메일 추출
+        String email = tokenProvider.getEmailFromToken(token);
+
+        //Redis에 저장할때 형식이 좀 달라서, 형식에 맞춰서 키를 조회함
+        String accessKey = String.format("access_%s", email);
+
+        if (!redisService.isTokenValid(accessKey)) {
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        }
+
         // Access Token 삭제
-        redisService.deleteToken(token);
+        redisService.deleteToken(accessKey);
 
         // Refresh Token 삭제
-        String email = tokenProvider.getEmailFromToken(token);
-        String refreshTokenKey = "refresh_" + email; // Refresh Token 키 규칙
-        redisService.deleteToken(refreshTokenKey);
+        String refreshKey = String.format("refresh_%s", email);
+        redisService.deleteToken(refreshKey);
     }
 }

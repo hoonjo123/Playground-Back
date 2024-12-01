@@ -55,6 +55,9 @@ dependencies {
 	//SMTP
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+	//로그
+	implementation 'org.projectlombok:lombok:1.18.24'
+	annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
 }
 

@@ -15,14 +15,18 @@ public class RedisService {
     }
 
     // 토큰 저장
-    public void saveToken(String key, String value, long duration) {
-        redisTemplate.opsForValue().set(key, value, duration, TimeUnit.MILLISECONDS);
+    public void saveAccessToken(String email, String nickname, String accessToken, long duration) {
+        String accessKey = String.format("access_%s", email);
+        String accessValue = String.format("email:%s,nickname:%s,token:%s", email, nickname, accessToken);
+        redisTemplate.opsForValue().set(accessKey, accessValue, duration, TimeUnit.MILLISECONDS);
     }
 
+
     public void saveRefreshToken(String email, String refreshToken, long duration) {
-        String refreshKey = "refresh_" + email;
+        String refreshKey = String.format("refresh_%s", email);
         redisTemplate.opsForValue().set(refreshKey, refreshToken, duration, TimeUnit.MILLISECONDS);
     }
+
     // 토큰 조회
     public String getToken(String key) {
         return redisTemplate.opsForValue().get(key);
