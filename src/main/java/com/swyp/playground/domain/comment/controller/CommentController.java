@@ -55,7 +55,7 @@ public class CommentController {
         return new ResponseEntity<>(targetComment, HttpStatus.CREATED);
     }
     
-    private Date getCurrentDateTime() {
+    public Date getCurrentDateTime() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
         return calendar.getTime();
