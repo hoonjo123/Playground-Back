@@ -30,6 +30,7 @@ public class NoteController {
     @Autowired
     private NoteService noteService;
 
+    // -- GET --
     @GetMapping("/all")
     public ResponseEntity<List<Note>> getAllNotes() {
         return new ResponseEntity<List<Note>>(noteService.getAllNotes(), HttpStatus.OK);
@@ -40,6 +41,7 @@ public class NoteController {
         return new ResponseEntity<Optional<Note>>(noteService.getNoteById(id), HttpStatus.OK);
     }
 
+    // -- POST --
     @PostMapping
     public ResponseEntity<Note> sendNote(@RequestBody WriteNoteDto writeNoteDto) {
         Note targetNote = new Note();
@@ -55,6 +57,11 @@ public class NoteController {
         return new ResponseEntity<>(targetNote, HttpStatus.CREATED);
     }
 
+    // -- UPDATE --
+
+    // -- DELETE --
+
+    // -- Other Methods --
     public Date getCurrentDateTime() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));

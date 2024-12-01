@@ -17,7 +17,7 @@ public class Note {
     private Long noteId;
 
     @Column(name="TARGET_ID", nullable=false)
-    private Long targetId;
+    private String targetId;
 
     @Column(name="CONTENT", nullable=false)
     private String content;
