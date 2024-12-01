@@ -15,71 +15,69 @@ public class EmailServiceImpl implements EmailService{
     @Autowired
     JavaMailSender emailSender;
 
-    public static String ePw = createKey();
+    public static String ePw = createTemporaryPassword();
 
-    private MimeMessage createMessage(String to)throws Exception{
-        System.out.println("보내는 대상 : "+ to);
-        System.out.println("인증 번호 : "+ePw);
-        MimeMessage  message = emailSender.createMimeMessage();
 
-        message.addRecipients(MimeMessage.RecipientType.TO, to);//보내는 대상
-        message.setSubject("Playgroud 본인확인 인증");//제목
+    public static String createTemporaryPassword() {
+        String upperCaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz";
+        String numbers = "0123456789";
+        String specialCharacters = "@$!%*?&";
+        String allCharacters = upperCaseLetters + lowerCaseLetters + numbers + specialCharacters;
 
-        String msgg="";
-        msgg+= "<div style='margin:100px;'>";
-        msgg+= "<h1> 안녕하세요 Playground 입니다. </h1>";
-        msgg+= "<br>";
-//        msgg+= "<p>아래 코드를 회원가입 창으로 돌아가 입력해주세요<p>";
-//        msgg+= "<br>";
-//        msgg+= "<p>감사합니다!<p>";
-//        msgg+= "<br>";
-        msgg+= "<div align='center' style='border:1px solid black; font-family:verdana';>";
-        msgg+= "<h3 style='color:blue;'>회원가입 인증 코드입니다.</h3>";
-        msgg+= "<div style='font-size:130%'>";
-        msgg+= "CODE : <strong>";
-        msgg+= ePw+"</strong><div><br/> ";
-        msgg+= "</div>";
-        message.setText(msgg, "utf-8", "html");//내용
-        message.setFrom(new InternetAddress("playgroundsmtp@gmail.com","playground"));//보내는 사람
+        Random random = new Random();
+        StringBuilder password = new StringBuilder();
+
+        password.append(upperCaseLetters.charAt(random.nextInt(upperCaseLetters.length())));
+        password.append(lowerCaseLetters.charAt(random.nextInt(lowerCaseLetters.length())));
+        password.append(numbers.charAt(random.nextInt(numbers.length())));
+        password.append(specialCharacters.charAt(random.nextInt(specialCharacters.length())));
+
+        // 나머지 문자 랜덤 추가
+        for (int i = 4; i < 8; i++) { // 총 8자리
+            password.append(allCharacters.charAt(random.nextInt(allCharacters.length())));
+        }
+
+        return password.toString();
+    }
+    private MimeMessage createPasswordResetMessage(String to, String newPassword) throws Exception {
+        System.out.println("보내는 대상: " + to);
+        System.out.println("새 비밀번호: " + newPassword);
+
+        MimeMessage message = emailSender.createMimeMessage();
+
+        message.addRecipients(MimeMessage.RecipientType.TO, to); // 받는 사람
+        message.setSubject("Playground 비밀번호 초기화 안내"); // 이메일 제목
+
+        String msg = "<div style='margin:100px;'>";
+        msg += "<h1>안녕하세요, Playground입니다.</h1>";
+        msg += "<p>요청하신 비밀번호가 초기화되었습니다. 아래 임시 비밀번호로 로그인해주세요:</p>";
+        msg += "<div align='center' style='border:1px solid black; font-family:verdana';>";
+        msg += "<h3 style='color:blue;'>임시 비밀번호</h3>";
+        msg += "<div style='font-size:130%'><strong>" + newPassword + "</strong></div><br/>";
+        msg += "</div>";
+        msg += "<p>로그인 후 반드시 비밀번호를 변경해주세요.</p>";
+        msg += "</div>";
+
+        message.setText(msg, "utf-8", "html");
+        message.setFrom(new InternetAddress("playgroundsmtp@gmail.com", "Playground"));
 
         return message;
     }
 
-    public static String createKey() {
-        StringBuffer key = new StringBuffer();
-        Random rnd = new Random();
-
-        for (int i = 0; i < 8; i++) { // 인증코드 8자리
-            int index = rnd.nextInt(3); // 0~2 까지 랜덤
-
-            switch (index) {
-                case 0:
-                    key.append((char) ((int) (rnd.nextInt(26)) + 97));
-                    //  a~z  (ex. 1+97=98 => (char)98 = 'b')
-                    break;
-                case 1:
-                    key.append((char) ((int) (rnd.nextInt(26)) + 65));
-                    //  A~Z
-                    break;
-                case 2:
-                    key.append((rnd.nextInt(10)));
-                    // 0~9
-                    break;
-            }
-        }
-
-        return key.toString();
-    }
+    // 비밀번호 초기화 이메일 발송 메서드예욤
     @Override
-    public String sendSimpleMessage(String to)throws Exception {
-        MimeMessage message = createMessage(to);
-        try{//예외처리
-            emailSender.send(message);
-        }catch(MailException es){
-            es.printStackTrace();
-            throw new IllegalArgumentException();
-        }
-        return ePw;
-    }
+    public String sendPasswordResetEmail(String email) throws Exception {
+        String newPassword = createTemporaryPassword(); // 임시 비밀번호 생성
+        MimeMessage message = createPasswordResetMessage(email, newPassword);
 
+        try {
+            emailSender.send(message);
+        } catch (MailException ex) {
+            ex.printStackTrace();
+            throw new IllegalArgumentException("이메일 발송 중 문제가 발생했습니다.");
+        }
+
+        return newPassword; // 생성된 임시 비밀번호 반환해줌쓰
+    }
 }

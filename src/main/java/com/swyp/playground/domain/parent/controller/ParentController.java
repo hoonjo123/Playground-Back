@@ -47,6 +47,8 @@ public class ParentController {
         List<ParentCreateResDto> response = parentService.getAllParents();
         return ResponseEntity.ok(response);
     }
+
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/users/delete/{id}")
     public ResponseEntity<Void> deleteParent(@PathVariable Long id) {
         parentService.deleteParentById(id);
