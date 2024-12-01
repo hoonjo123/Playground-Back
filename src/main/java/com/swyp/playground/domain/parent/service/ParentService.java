@@ -65,4 +65,11 @@ public class ParentService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + id));
         parentRepository.deleteById(id);
     }
+    public void resetPassword(String email, String newPassword) {
+        Parent parent = parentRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("해당 이메일을 가진 사용자가 존재하지 않습니다: " + email));
+
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        parentRepository.updatePasswordByEmail(email, encodedPassword);
+    }
 }

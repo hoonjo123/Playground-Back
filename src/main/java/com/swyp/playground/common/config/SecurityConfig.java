@@ -36,7 +36,8 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/auth/signup",
                                 "/auth/login",
-                                "/auth/logout").permitAll()
+                                "/auth/reset-password"
+                                ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthFilter(tokenProvider, redisService),
