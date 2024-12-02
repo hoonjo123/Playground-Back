@@ -6,6 +6,7 @@ import com.swyp.playground.domain.findfriend.domain.RecruitmentStatus;
 import com.swyp.playground.domain.findfriend.dto.*;
 import com.swyp.playground.domain.findfriend.repository.FindFriendRepository;
 import com.swyp.playground.domain.parent.domain.Parent;
+import com.swyp.playground.domain.parent.repository.ParentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,7 +30,7 @@ public class FindFriendService {
 
     private final FindFriendRepository findFriendRepository;
 
-    private final ChildRepository childRepository;
+    private final ParentRepository parentRepository;
 
 
     //놀이터 친구 모집글 목록 반환
@@ -90,9 +91,15 @@ public class FindFriendService {
 
 
     //친구 모집글 등록
-    public Long registerFindFriend(String playgroundId, FindFriendRegisterRequest findFriendRegisterRequest) {
+    public Long registerFindFriend(String playgroundId, String email, FindFriendRegisterRequest findFriendRegisterRequest) {
         LocalDateTime startTime = findFriendRegisterRequest.getStartTime();
         LocalDateTime endTime = startTime.plusMinutes(findFriendRegisterRequest.getDuration());
+        Parent parent = parentRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
+
+        Optional<FindFriend> ownerParent = findFriendRepository.findByOwner_ParentId(parent.getParentId());
+        if(ownerParent.isPresent())
+            throw new IllegalArgumentException("이미 만든 친구 모집글이 있습니다.");
 
         // FindFriend 엔티티 객체 생성
         FindFriend findFriend = FindFriend.builder()
@@ -104,16 +111,26 @@ public class FindFriendService {
                 .currentCount(1)
                 .status(RecruitmentStatus.RECRUITING)
                 .description(findFriendRegisterRequest.getDescription())
+                .owner(parent)
                 .build();
 
         return findFriendRepository.save(findFriend).getFindFriendId();
     }
 
     //친구 모집글 수정
-    public FindFriendInfoResponse modifyFindFriendInfo(String playgroundId, Long findFriendId, FindFriendModifyRequest findFriendModifyRequest) {
-        // 모집글 조회
+    public FindFriendInfoResponse modifyFindFriendInfo(String playgroundId, Long findFriendId, String email, FindFriendModifyRequest findFriendModifyRequest) {
+
+        Parent parent = parentRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
+
         FindFriend findFriend = findFriendRepository.findById(findFriendId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글을 찾을 수 없습니다."));
+
+
+        //친구 모집글 수정 권한 검증
+        if(findFriend.getOwner().getParentId() != parent.getParentId()){
+            throw new IllegalArgumentException("해당 글을 수정할 권한이 없습니다.");
+        }
 
         // 놀이터 ID 검증
         if (!findFriend.getPlaygroundId().equals(playgroundId)) {
@@ -140,17 +157,26 @@ public class FindFriendService {
     }
 
     //친구 모집글 삭제
-    public void deleteFindFriend(Long findFriendId) {
+    public void deleteFindFriend(Long findFriendId, String email) {
+
+        Parent parent = parentRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
+
+        FindFriend findFriend = findFriendRepository.findById(findFriendId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 모집글을 찾을 수 없습니다."));
+
+        //친구 모집글 삭제 권한 검증
+        if(findFriend.getOwner().getParentId() != parent.getParentId()){
+            throw new IllegalArgumentException("해당 글을 삭제할 권한이 없습니다.");
+        }
         findFriendRepository.deleteById(findFriendId);
     }
-
-    //일정 시간마다 친구 모집글 확인(시작 시간에서 10분이 지나면 친구 모집글 상태를 노는중으로 변경
     // 10초마다 상태 업데이트
     @Scheduled(fixedRate = 10000)
     public void updateFindFriendStatus() {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
 
-        // 상태가 RECRUITING이고 startTime으로부터 10분이 지난 항목을 COMPLETE로 변경
+        // 상태가 RECRUITING이고 startTime으로부터 10분이 지난 항목을 PLAYING으로 변경
         List<FindFriend> toComplete = findFriendRepository.findByStatusAndStartTimeBefore(RecruitmentStatus.RECRUITING, now.minusMinutes(10));
         for (FindFriend findFriend : toComplete) {
             findFriend.setStatus(RecruitmentStatus.PLAYING);
@@ -161,5 +187,33 @@ public class FindFriendService {
         for (FindFriend findFriend : toClose) {
             findFriend.setStatus(RecruitmentStatus.COMPLETE);
         }
+    }
+
+    //친구 모집글 참가 및 취소
+    public void actionFindFriend(String playgroundId, Long findFriendId, String email, String action) {
+
+        Parent parent = parentRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
+
+        FindFriend findFriend = findFriendRepository.findById(findFriendId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 모집글을 찾을 수 없습니다."));
+
+        if(action.equals("participate")){
+            Optional<FindFriend> ownerParent = findFriendRepository.findByOwner_ParentId(parent.getParentId());
+            if(ownerParent.isPresent())
+                throw new IllegalArgumentException("이미 만든 친구 모집글이 있습니다.");
+
+            if(parent.getFindFriend() != null){
+                throw new IllegalArgumentException("이미 참가한 방이 있습니다.");
+            }
+            parent.setFindFriend(findFriend);
+            findFriend.setCurrentCount(findFriend.getCurrentCount() + 1);
+        }
+
+        if(action.equals("cancel")){
+            parent.setFindFriend(null);
+            findFriend.setCurrentCount(findFriend.getCurrentCount() - 1);
+        }
+        
     }
 }

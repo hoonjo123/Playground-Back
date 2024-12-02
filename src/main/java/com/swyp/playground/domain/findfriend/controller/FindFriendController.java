@@ -9,6 +9,10 @@ import jakarta.validation.Valid;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,29 +40,51 @@ public class FindFriendController {
         return ResponseEntity.ok(findFriendInfo);
     }
 
-    //친구 모집글 등록 ++추후 토큰 필요
+    //친구 모집글 등록(토큰)
     @PostMapping("/{playgroundId}")
     public Long registerFindFriend(@PathVariable String playgroundId,
-                                   @RequestBody @Valid FindFriendRegisterRequest findFriendRegisterRequest){
-        return findFriendService.registerFindFriend(playgroundId, findFriendRegisterRequest);
+                                   @RequestBody @Valid FindFriendRegisterRequest findFriendRegisterRequest,
+                                   @AuthenticationPrincipal UserDetails userDetails){
+
+        String email = userDetails.getUsername();
+
+        return findFriendService.registerFindFriend(playgroundId, email,  findFriendRegisterRequest);
     }
 
-    //친구 모집글 수정 ++추후 토큰 필요
+    //친구 모집글 수정(토큰)
     @PatchMapping("/{playgroundId}/{findFriendId}")
     public ResponseEntity<FindFriendInfoResponse> modifyFindFindFriendInfo(@PathVariable String playgroundId,
                                                                            @PathVariable Long findFriendId,
-                                                                           @RequestBody @Valid FindFriendModifyRequest findFriendModifyRequest) {
-        FindFriendInfoResponse findFriendInfo = findFriendService.modifyFindFriendInfo(playgroundId, findFriendId, findFriendModifyRequest);
+                                                                           @RequestBody @Valid FindFriendModifyRequest findFriendModifyRequest,
+                                                                           @AuthenticationPrincipal UserDetails userDetails) {
+
+        String email = userDetails.getUsername();
+        FindFriendInfoResponse findFriendInfo = findFriendService.modifyFindFriendInfo(playgroundId, findFriendId, email, findFriendModifyRequest);
         return ResponseEntity.ok(findFriendInfo);
     }
 
-    //친구 모집글 삭제 ++추후 토큰 필요
+    //친구 모집글 삭제(토큰)
     @DeleteMapping("/{playgroundId}/{findFriendId}")
     public void deleteFindFriend(@PathVariable String playgroundId,
-                                 @PathVariable Long findFriendId) {
-        findFriendService.deleteFindFriend(findFriendId);
+                                 @PathVariable Long findFriendId,
+                                 @AuthenticationPrincipal UserDetails userDetails) {
+
+        String email = userDetails.getUsername();
+        findFriendService.deleteFindFriend(findFriendId, email);
     }
 
+    //친구 모집글 참가 및 취소(토큰)
+    @PostMapping("/{playgroundId}/{findFriendId}")
+    public void participateFindFriend(@PathVariable String playgroundId,
+                                      @PathVariable Long findFriendId,
+                                      @AuthenticationPrincipal UserDetails userDetails,
+                                      @RequestParam String action) {
+
+        String email = userDetails.getUsername();
+        findFriendService.actionFindFriend(playgroundId, findFriendId, email, action);
+    }
+
+    //최근 논 친구 목록
 
 
     @Data
