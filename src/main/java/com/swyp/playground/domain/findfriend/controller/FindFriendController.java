@@ -5,6 +5,7 @@ import com.swyp.playground.domain.findfriend.dto.FindFriendListResponse;
 import com.swyp.playground.domain.findfriend.dto.FindFriendModifyRequest;
 import com.swyp.playground.domain.findfriend.dto.FindFriendRegisterRequest;
 import com.swyp.playground.domain.findfriend.service.FindFriendService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,7 @@ public class FindFriendController {
     }
 
     //친구 모집글 등록(토큰)
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/{playgroundId}")
     public Long registerFindFriend(@PathVariable String playgroundId,
                                    @RequestBody @Valid FindFriendRegisterRequest findFriendRegisterRequest,
@@ -52,6 +54,7 @@ public class FindFriendController {
     }
 
     //친구 모집글 수정(토큰)
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/{playgroundId}/{findFriendId}")
     public ResponseEntity<FindFriendInfoResponse> modifyFindFindFriendInfo(@PathVariable String playgroundId,
                                                                            @PathVariable Long findFriendId,
@@ -64,6 +67,7 @@ public class FindFriendController {
     }
 
     //친구 모집글 삭제(토큰)
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{playgroundId}/{findFriendId}")
     public void deleteFindFriend(@PathVariable String playgroundId,
                                  @PathVariable Long findFriendId,
@@ -74,6 +78,7 @@ public class FindFriendController {
     }
 
     //친구 모집글 참가 및 취소(토큰)
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/{playgroundId}/{findFriendId}")
     public void participateFindFriend(@PathVariable String playgroundId,
                                       @PathVariable Long findFriendId,
