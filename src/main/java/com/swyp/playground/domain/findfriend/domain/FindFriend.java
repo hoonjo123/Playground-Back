@@ -20,7 +20,6 @@ import java.util.List;
 public class FindFriend {
 
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "find_friend_id")
@@ -41,6 +40,9 @@ public class FindFriend {
 
     @Column(name = "end_time")
     private LocalDateTime endTime;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @Column(name = "current_count")
     private Integer currentCount;

@@ -27,7 +27,7 @@ public class FindFriendController {
     private final FindFriendService findFriendService;
 
 
-    //놀이터 별 친구 모집글 목록 조회
+    //놀이터 별 친구 모집글 목록 조회(최신순)
     @GetMapping("/{playgroundId}")
     public ResponseEntity<Result> findFindFriendList(@PathVariable String playgroundId) {
         List<FindFriendListResponse> findFriendList = findFriendService.getFindFriendList(playgroundId);
@@ -41,7 +41,7 @@ public class FindFriendController {
         return ResponseEntity.ok(findFriendInfo);
     }
 
-    //친구 모집글 등록(토큰)
+    //친구 모집글 등록
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/{playgroundId}")
     public Long registerFindFriend(@PathVariable String playgroundId,
@@ -53,7 +53,7 @@ public class FindFriendController {
         return findFriendService.registerFindFriend(playgroundId, email,  findFriendRegisterRequest);
     }
 
-    //친구 모집글 수정(토큰)
+    //친구 모집글 수정
     @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/{playgroundId}/{findFriendId}")
     public ResponseEntity<FindFriendInfoResponse> modifyFindFindFriendInfo(@PathVariable String playgroundId,
@@ -66,7 +66,7 @@ public class FindFriendController {
         return ResponseEntity.ok(findFriendInfo);
     }
 
-    //친구 모집글 삭제(토큰)
+    //친구 모집글 삭제
     @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{playgroundId}/{findFriendId}")
     public void deleteFindFriend(@PathVariable String playgroundId,
@@ -77,7 +77,7 @@ public class FindFriendController {
         findFriendService.deleteFindFriend(findFriendId, email);
     }
 
-    //친구 모집글 참가 및 취소(토큰)
+    //친구 모집글 참가 및 취소
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/{playgroundId}/{findFriendId}")
     public void participateFindFriend(@PathVariable String playgroundId,
@@ -89,8 +89,25 @@ public class FindFriendController {
         findFriendService.actionFindFriend(playgroundId, findFriendId, email, action);
     }
 
-    //최근 논 친구 목록
+    //내가 모집했던 글 조회(최신순)
+    @GetMapping
+    public ResponseEntity<Result> myFindFindFriendList(@AuthenticationPrincipal UserDetails userDetails) {
 
+        String email = userDetails.getUsername();
+
+        List<FindFriendListResponse> findFriendList = findFriendService.getMyFindFriendList(email);
+        return ResponseEntity.ok(new Result<>(findFriendList));
+    }
+
+//    //최근 논 친구 목록
+//    @SecurityRequirement(name = "bearerAuth")
+//    @GetMapping("/recent")
+//    public void getRecentFriend(@PathVariable Long findFriendId,
+//                                @AuthenticationPrincipal UserDetails userDetails) {
+//
+//        String email = userDetails.getUsername();
+//        findFriendService.getRecentFriend(playgroundId, findFriendId, email, action);
+//    }
 
     @Data
     @AllArgsConstructor

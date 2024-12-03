@@ -35,7 +35,7 @@ public class FindFriendService {
 
     //놀이터 친구 모집글 목록 반환
     public List<FindFriendListResponse> getFindFriendList(String playgroundId) {
-        List<FindFriend> findFriendList = findFriendRepository.findAllByPlaygroundId(playgroundId);
+        List<FindFriend> findFriendList = findFriendRepository.findAllByPlaygroundIdOrderByCreatedAtDesc(playgroundId);
         return findFriendList.stream()
                 .map(f -> FindFriendListResponse.builder()
                         .id(f.getFindFriendId())
@@ -108,6 +108,7 @@ public class FindFriendService {
                 .title(findFriendRegisterRequest.getTitle())
                 .startTime(startTime)
                 .endTime(endTime)
+                .createdAt(LocalDateTime.now())
                 .currentCount(1)
                 .status(RecruitmentStatus.RECRUITING)
                 .description(findFriendRegisterRequest.getDescription())
@@ -171,6 +172,7 @@ public class FindFriendService {
         }
         findFriendRepository.deleteById(findFriendId);
     }
+
     // 10초마다 상태 업데이트
     @Scheduled(fixedRate = 10000)
     public void updateFindFriendStatus() {
@@ -182,10 +184,16 @@ public class FindFriendService {
             findFriend.setStatus(RecruitmentStatus.PLAYING);
         }
 
-        // 상태가 PLAYING이고 endTime이 지난 항목을 CLOSED로 변경
+        // 상태가 PLAYING이고 endTime이 지난 항목을 CLOSED로 변경 및 참여 해제
         List<FindFriend> toClose = findFriendRepository.findByStatusAndEndTimeBefore(RecruitmentStatus.PLAYING, now);
         for (FindFriend findFriend : toClose) {
             findFriend.setStatus(RecruitmentStatus.COMPLETE);
+            findFriend.setOwner(null);
+
+            List<Parent> participants = findFriend.getParticipants();
+            for (Parent parent : participants) {
+                parent.setFindFriend(null);
+            }
         }
     }
 
@@ -214,6 +222,7 @@ public class FindFriendService {
             parent.setFindFriend(null);
             findFriend.setCurrentCount(findFriend.getCurrentCount() - 1);
         }
-        
+
     }
+
 }
