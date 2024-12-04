@@ -2,9 +2,11 @@ package com.swyp.playground.domain.findfriend.service;
 
 import com.swyp.playground.domain.child.repository.ChildRepository;
 import com.swyp.playground.domain.findfriend.domain.FindFriend;
+import com.swyp.playground.domain.findfriend.domain.PlayHistory;
 import com.swyp.playground.domain.findfriend.domain.RecruitmentStatus;
 import com.swyp.playground.domain.findfriend.dto.*;
 import com.swyp.playground.domain.findfriend.repository.FindFriendRepository;
+import com.swyp.playground.domain.findfriend.repository.PlayHistoryRepository;
 import com.swyp.playground.domain.parent.domain.Parent;
 import com.swyp.playground.domain.parent.repository.ParentRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -29,6 +32,8 @@ import java.util.stream.Collectors;
 public class FindFriendService {
 
     private final FindFriendRepository findFriendRepository;
+
+    private final PlayHistoryRepository playHistoryRepository;
 
     private final ParentRepository parentRepository;
 
@@ -53,8 +58,14 @@ public class FindFriendService {
     public FindFriendInfoResponse getFindFriendInfo(Long findFriendId) {
         FindFriend findFriend = findFriendRepository.findById(findFriendId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 친구 모집글을 찾을 수 없습니다."));
-        List<Parent> participants = findFriend.getParticipants();
 
+        PlayHistory playHistory = playHistoryRepository.findByFindFriend_FindFriendId(findFriendId);
+
+        //모집이 완료된 글은 FindFriend에서 owner와 participates가 null이 되기때문에 playHistory에서 과거의 owner와 participates를 get
+        Parent owner = findFriend.getStatus() != RecruitmentStatus.COMPLETE ? findFriend.getOwner() : playHistory.getOwner();
+        List<Parent> participants = findFriend.getStatus() != RecruitmentStatus.COMPLETE ? findFriend.getParticipants() : playHistory.getParticipants();
+
+        //이미 완료된 모집글이라면 History의 정보로 찾아서 생성
         return FindFriendInfoResponse.builder()
                 .playgroundName(findFriend.getPlaygroundName())
                 .recruitmentStatus(findFriend.getStatus().name())
@@ -62,14 +73,16 @@ public class FindFriendService {
                 .description(findFriend.getDescription())
                 .scheduleTime(formatSchedule(findFriend.getStartTime(), findFriend.getEndTime()))
                 .owner(FindFriendOwnerInfoResponse.builder()
-                        .nickname(findFriend.getOwner().getNickname())
-                        .role(findFriend.getOwner().getRole().name())
-                        .address(findFriend.getOwner().getAddress())
+                        .nickname(owner.getNickname())
+                        .role(owner.getRole().name())
+                        .address(owner.getAddress())
+                        .profileImg(owner.getProfileImg())
                         .build()
                 )
-                .participants(findFriend.getParticipants().stream()
+                .participants(participants.stream()
                         .map(participant -> FindFriendParticipantsListResponse.builder()
                                 .nickname(participant.getNickname())
+                                .profileImg(participant.getProfileImg())
                                 .build()
                         )
                         .toList()
@@ -187,13 +200,25 @@ public class FindFriendService {
         // 상태가 PLAYING이고 endTime이 지난 항목을 CLOSED로 변경 및 참여 해제
         List<FindFriend> toClose = findFriendRepository.findByStatusAndEndTimeBefore(RecruitmentStatus.PLAYING, now);
         for (FindFriend findFriend : toClose) {
-            findFriend.setStatus(RecruitmentStatus.COMPLETE);
-            findFriend.setOwner(null);
+            //owner와 participants를 null로 바꾸기전 과거 내용 조회를 위해 playHistory에 저장(컬렉션 공유 때문에 새 객체로 생성)
+            List<Parent> originalList = findFriend.getParticipants();
+            List<Parent> copiedList = new ArrayList<>();
+            copiedList.addAll(originalList);
+            PlayHistory playHistory = PlayHistory.builder()
+                    .owner(findFriend.getOwner())
+                    .participants(copiedList)
+                    .findFriend(findFriend)
+                    .build();
 
+            playHistoryRepository.save(playHistory);
+
+            findFriend.setStatus(RecruitmentStatus.COMPLETE);
             List<Parent> participants = findFriend.getParticipants();
             for (Parent parent : participants) {
                 parent.setFindFriend(null);
             }
+            findFriend.setOwner(null);
+            findFriend.getParticipants().clear();
         }
     }
 
@@ -225,4 +250,31 @@ public class FindFriendService {
 
     }
 
+    //내가 모집한 글들 조회
+    public List<FindFriendListResponse> getMyFindFriendList(String email) {
+        List<FindFriend> findFriendList = new ArrayList<>();
+
+        //모집중 이거나 노는중인 글 1개 조회
+        findFriendRepository.findByOwner_Email(email)
+                .ifPresent(findFriendList::add);
+
+        //완료된 글 목록 조회
+        List<PlayHistory> playHistoryList = playHistoryRepository.findByOwner_Email(email);
+        // PlayHistory에서 FindFriend를 추출하여 findFriendList에 추가
+        playHistoryList.forEach(playHistory ->
+                findFriendList.add(playHistory.getFindFriend())
+        );
+
+        return findFriendList.stream()
+                .map(f -> FindFriendListResponse.builder()
+                        .id(f.getFindFriendId())
+                        .playgroundName(f.getPlaygroundName())
+                        .title(f.getTitle())
+                        .description(f.getDescription())
+                        .scheduleTime(formatSchedule(f.getStartTime(), f.getEndTime())) //포맷팅 시간으로 변경하여 추가
+                        .recruitmentStatus(f.getStatus().name())
+                        .currentCount(f.getCurrentCount())
+                        .build())
+                .collect(Collectors.toList());
+    }
 }

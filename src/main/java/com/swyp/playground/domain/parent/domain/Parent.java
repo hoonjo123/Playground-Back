@@ -2,6 +2,7 @@ package com.swyp.playground.domain.parent.domain;
 
 import com.swyp.playground.domain.child.domain.Child;
 import com.swyp.playground.domain.findfriend.domain.FindFriend;
+import com.swyp.playground.domain.findfriend.domain.PlayHistory;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -71,7 +72,6 @@ public class Parent {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "find_friend_id")
     private FindFriend findFriend;
-
 
     public void addChild(Child child) {
         child.setParent(this);

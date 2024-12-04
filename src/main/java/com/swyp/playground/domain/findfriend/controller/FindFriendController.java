@@ -90,7 +90,7 @@ public class FindFriendController {
     }
 
     //내가 모집했던 글 조회(최신순)
-    @GetMapping
+    @GetMapping("/my")
     public ResponseEntity<Result> myFindFindFriendList(@AuthenticationPrincipal UserDetails userDetails) {
 
         String email = userDetails.getUsername();
@@ -101,7 +101,7 @@ public class FindFriendController {
 
 //    //최근 논 친구 목록
 //    @SecurityRequirement(name = "bearerAuth")
-//    @GetMapping("/recent")
+//    @GetMapping("/myRecent")
 //    public void getRecentFriend(@PathVariable Long findFriendId,
 //                                @AuthenticationPrincipal UserDetails userDetails) {
 //

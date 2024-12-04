@@ -3,6 +3,8 @@ package com.swyp.playground.domain.findfriend.repository;
 import com.swyp.playground.domain.findfriend.domain.FindFriend;
 import com.swyp.playground.domain.findfriend.domain.RecruitmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -23,6 +25,6 @@ public interface FindFriendRepository extends JpaRepository<FindFriend, Long> {
     //특정 부모가 만든 친구 모집 글 찾기
     Optional<FindFriend> findByOwner_ParentId(Long parentId);
 
-    //내가 모집했던 글 조회
-    List<FindFriend> findAllByOwnerParentId(Long parentId);
+    //내가 모집중이거나 놀고 있는 글 조회
+    Optional<FindFriend> findByOwner_Email(String email);
 }
