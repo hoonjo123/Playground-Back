@@ -20,7 +20,6 @@ import java.util.List;
 public class FindFriend {
 
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "find_friend_id")
@@ -42,6 +41,9 @@ public class FindFriend {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
     @Column(name = "current_count")
     private Integer currentCount;
 
@@ -52,7 +54,7 @@ public class FindFriend {
     @Column(name = "description")
     private String description;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Parent owner;
 
