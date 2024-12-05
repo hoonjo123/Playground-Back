@@ -1,9 +1,6 @@
 package com.swyp.playground.domain.findfriend.controller;
 
-import com.swyp.playground.domain.findfriend.dto.FindFriendInfoResponse;
-import com.swyp.playground.domain.findfriend.dto.FindFriendListResponse;
-import com.swyp.playground.domain.findfriend.dto.FindFriendModifyRequest;
-import com.swyp.playground.domain.findfriend.dto.FindFriendRegisterRequest;
+import com.swyp.playground.domain.findfriend.dto.*;
 import com.swyp.playground.domain.findfriend.service.FindFriendService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -21,21 +18,20 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/find-friend")
 public class FindFriendController {
 
     private final FindFriendService findFriendService;
 
 
     //놀이터 별 친구 모집글 목록 조회(최신순)
-    @GetMapping("/{playgroundId}")
+    @GetMapping("/find-friend-list/{playgroundId}")
     public ResponseEntity<Result> findFindFriendList(@PathVariable String playgroundId) {
         List<FindFriendListResponse> findFriendList = findFriendService.getFindFriendList(playgroundId);
         return ResponseEntity.ok(new Result<>(findFriendList));
     }
 
     //친구 모집글 정보 조회
-    @GetMapping("/{playgroundId}/{findFriendId}")
+    @GetMapping("/find-friend/{findFriendId}")
     public ResponseEntity<FindFriendInfoResponse> findFindFriendInfo(@PathVariable String playgroundId, @PathVariable Long findFriendId) {
         FindFriendInfoResponse findFriendInfo = findFriendService.getFindFriendInfo(findFriendId);
         return ResponseEntity.ok(findFriendInfo);
@@ -43,7 +39,7 @@ public class FindFriendController {
 
     //친구 모집글 등록
     @SecurityRequirement(name = "bearerAuth")
-    @PostMapping("/{playgroundId}")
+    @PostMapping("/find-friend/{playgroundId}")
     public Long registerFindFriend(@PathVariable String playgroundId,
                                    @RequestBody @Valid FindFriendRegisterRequest findFriendRegisterRequest,
                                    @AuthenticationPrincipal UserDetails userDetails){
@@ -55,7 +51,7 @@ public class FindFriendController {
 
     //친구 모집글 수정
     @SecurityRequirement(name = "bearerAuth")
-    @PatchMapping("/{playgroundId}/{findFriendId}")
+    @PatchMapping("/find-friend/{playgroundId}/{findFriendId}")
     public ResponseEntity<FindFriendInfoResponse> modifyFindFindFriendInfo(@PathVariable String playgroundId,
                                                                            @PathVariable Long findFriendId,
                                                                            @RequestBody @Valid FindFriendModifyRequest findFriendModifyRequest,
@@ -68,7 +64,7 @@ public class FindFriendController {
 
     //친구 모집글 삭제
     @SecurityRequirement(name = "bearerAuth")
-    @DeleteMapping("/{playgroundId}/{findFriendId}")
+    @DeleteMapping("/find-friend/{playgroundId}/{findFriendId}")
     public void deleteFindFriend(@PathVariable String playgroundId,
                                  @PathVariable Long findFriendId,
                                  @AuthenticationPrincipal UserDetails userDetails) {
@@ -79,7 +75,7 @@ public class FindFriendController {
 
     //친구 모집글 참가 및 취소
     @SecurityRequirement(name = "bearerAuth")
-    @PostMapping("/{playgroundId}/{findFriendId}")
+    @PostMapping("/find-friend/{playgroundId}/{findFriendId}")
     public void participateFindFriend(@PathVariable String playgroundId,
                                       @PathVariable Long findFriendId,
                                       @AuthenticationPrincipal UserDetails userDetails,
@@ -90,7 +86,7 @@ public class FindFriendController {
     }
 
     //내가 모집했던 글 조회(최신순)
-    @GetMapping("/my")
+    @GetMapping("/find-friend/my")
     public ResponseEntity<Result> myFindFindFriendList(@AuthenticationPrincipal UserDetails userDetails) {
 
         String email = userDetails.getUsername();
@@ -99,15 +95,16 @@ public class FindFriendController {
         return ResponseEntity.ok(new Result<>(findFriendList));
     }
 
-//    //최근 논 친구 목록
-//    @SecurityRequirement(name = "bearerAuth")
-//    @GetMapping("/myRecent")
-//    public void getRecentFriend(@PathVariable Long findFriendId,
-//                                @AuthenticationPrincipal UserDetails userDetails) {
-//
-//        String email = userDetails.getUsername();
-//        findFriendService.getRecentFriend(playgroundId, findFriendId, email, action);
-//    }
+    //최근 논 친구 목록
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/find-friend/recent")
+    public ResponseEntity<Result> getRecentFriend(@AuthenticationPrincipal UserDetails userDetails) {
+
+        String email = userDetails.getUsername();
+        List<MyRecentFriendResponse> recentFriends = findFriendService.getRecentFriend(email);
+
+        return ResponseEntity.ok(new Result<>(recentFriends));
+    }
 
     @Data
     @AllArgsConstructor

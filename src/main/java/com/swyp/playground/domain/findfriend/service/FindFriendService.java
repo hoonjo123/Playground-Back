@@ -1,9 +1,12 @@
 package com.swyp.playground.domain.findfriend.service;
 
 import com.swyp.playground.domain.findfriend.domain.FindFriend;
+import com.swyp.playground.domain.findfriend.domain.PlayHistory;
 import com.swyp.playground.domain.findfriend.domain.RecruitmentStatus;
+import com.swyp.playground.domain.findfriend.domain.UserRole;
 import com.swyp.playground.domain.findfriend.dto.*;
 import com.swyp.playground.domain.findfriend.repository.FindFriendRepository;
+import com.swyp.playground.domain.findfriend.repository.PlayHistoryRepository;
 import com.swyp.playground.domain.parent.domain.Parent;
 import com.swyp.playground.domain.parent.repository.ParentRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,8 @@ public class FindFriendService {
 
     private final ParentRepository parentRepository;
 
+    private final PlayHistoryRepository playHistoryRepository;
+
 
     //놀이터 친구 모집글 목록 반환
     public List<FindFriendListResponse> getFindFriendList(String playgroundId) {
@@ -50,13 +55,32 @@ public class FindFriendService {
         FindFriend findFriend = findFriendRepository.findById(findFriendId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 친구 모집글을 찾을 수 없습니다."));
 
-        if(findFriend.getStatus() == RecruitmentStatus.COMPLETE) throw new IllegalArgumentException("완료된 친구모집글의 정보는 볼 수 없습니다.");
+        Parent owner;
+        List<Parent> participants;
 
-        //COMPLETE 게시글은 상세정보X
-        Parent owner = findFriend.getOwner();
-        List<Parent> participants = findFriend.getParticipants();
+        // 모집글 상태가 COMPLETE라면 PlayHistory에서 데이터를 가져옴
+        if (findFriend.getStatus() == RecruitmentStatus.COMPLETE) {
+            List<PlayHistory> playHistories = playHistoryRepository.findByFindFriend(findFriend);
 
-        //이미 완료된 모집글이라면 History의 정보로 찾아서 생성
+            // PlayHistory에서 LEADER를 owner로 설정
+            owner = playHistories.stream()
+                    .filter(playHistory -> playHistory.getUserRole() == UserRole.LEADER)
+                    .map(PlayHistory::getParent)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("완료된 모집글에 작성자가 존재하지 않습니다."));
+
+            // PlayHistory에서 PARTICIPANT를 participants로 설정
+            participants = playHistories.stream()
+                    .filter(playHistory -> playHistory.getUserRole() == UserRole.PARTICIPANT)
+                    .map(PlayHistory::getParent)
+                    .toList();
+        } else {
+            // 모집글 상태가 COMPLETE가 아니라면 FindFriend에서 바로 가져옴
+            owner = findFriend.getOwner();
+            participants = findFriend.getParticipants();
+        }
+
+        //모집글 정보 생성
         return FindFriendInfoResponse.builder()
                 .playgroundName(findFriend.getPlaygroundName())
                 .recruitmentStatus(findFriend.getStatus().name())
@@ -192,11 +216,30 @@ public class FindFriendService {
         // 상태가 PLAYING이고 endTime이 지난 항목을 CLOSED로 변경 및 참여 해제
         List<FindFriend> toClose = findFriendRepository.findByStatusAndEndTimeBefore(RecruitmentStatus.PLAYING, now);
         for (FindFriend findFriend : toClose) {
+
             findFriend.setStatus(RecruitmentStatus.COMPLETE);
 
-            //Parent와 FindFriend 관계 해제
+            //프록시 초기화 코드
+            findFriend.getOwner().getAddress();
+
+            PlayHistory playHistoryLeader = PlayHistory.builder()
+                    .findFriend(findFriend)
+                    .parent(findFriend.getOwner())
+                    .userRole(UserRole.LEADER)
+                    .build();
+            playHistoryRepository.save(playHistoryLeader);
             List<Parent> participants = findFriend.getParticipants();
             for (Parent parent : participants) {
+
+                //누가 어떤 FindFriend에서 놀았는지 기록
+                PlayHistory playHistoryParticipants = PlayHistory.builder()
+                        .findFriend(findFriend)
+                        .parent(parent)
+                        .userRole(UserRole.PARTICIPANT)
+                        .build();
+                playHistoryRepository.save(playHistoryParticipants);
+
+                //Parent와 FindFriend 관계 해제
                 parent.setFindFriend(null);
             }
             findFriend.setOwner(null);
@@ -254,4 +297,74 @@ public class FindFriendService {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    public List<MyRecentFriendResponse> getRecentFriend(String email) {
+
+        // 사용자 정보 조회
+        Parent parent = parentRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다."));
+
+        // 해당 Parent가 참여한 모든 PlayHistory 조회
+        List<PlayHistory> playHistories = playHistoryRepository.findByParent(parent);
+
+        // 중복을 제거하기 위해 Set을 사용하여 참여한 부모들을 저장
+        Set<Parent> allParticipants = new HashSet<>();
+        List<FindFriend> findFriends = new ArrayList<>();
+
+        // 각 PlayHistory에서 FindFriend 정보를 가져오고, 그에 참여한 모든 Parent를 찾음
+        for (PlayHistory playHistory : playHistories) {
+            FindFriend findFriend = playHistory.getFindFriend();
+
+            // 해당 FindFriend가 COMPLETE 상태라면, 그에 참여한 Parent들을 찾음
+            if (findFriend.getStatus() == RecruitmentStatus.COMPLETE) {
+                // FindFriend에 참여한 Parent들을 PlayHistory에서 찾아서 추가
+                List<PlayHistory> relatedPlayHistories = playHistoryRepository.findByFindFriend(findFriend);
+                for (PlayHistory relatedHistory : relatedPlayHistories) {
+                    Parent participant = relatedHistory.getParent();
+
+                    // 자기 자신은 제외하고, 중복을 피하기 위해 Set에 추가
+                    if (!participant.getEmail().equals(email)) {
+                        allParticipants.add(participant);
+                    }
+                }
+
+                // FindFriend를 리스트에 추가
+                findFriends.add(findFriend);
+            }
+        }
+
+        // FindFriend의 startTime 기준으로 내림차순 정렬
+        findFriends.sort((f1, f2) -> f2.getStartTime().compareTo(f1.getStartTime()));
+
+        // 중복을 제거한 Parent들을 MyRecentFriendResponse로 변환하여 반환
+        return allParticipants.stream()
+                .map(p -> new MyRecentFriendResponse(
+                        p.getNickname(),
+                        p.getRole(),
+                        p.getAddress(),
+                        p.getIntroduce(),
+                        p.getProfileImg()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    // 부모와 FindFriend의 startTime을 함께 저장할 수 있는 클래스
+    public static class ParentWithStartTime {
+        private Parent parent;
+        private LocalDateTime startTime;
+
+        public ParentWithStartTime(Parent parent, LocalDateTime startTime) {
+            this.parent = parent;
+            this.startTime = startTime;
+        }
+
+        public Parent getParent() {
+            return parent;
+        }
+
+        public LocalDateTime getStartTime() {
+            return startTime;
+        }
+    }
 }
+
