@@ -86,6 +86,7 @@ public class FindFriendController {
     }
 
     //내가 모집했던 글 조회(최신순)
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/find-friend/my")
     public ResponseEntity<Result> myFindFindFriendList(@AuthenticationPrincipal UserDetails userDetails) {
 
