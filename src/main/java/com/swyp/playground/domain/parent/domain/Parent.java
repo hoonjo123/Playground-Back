@@ -2,7 +2,6 @@ package com.swyp.playground.domain.parent.domain;
 
 import com.swyp.playground.domain.child.domain.Child;
 import com.swyp.playground.domain.findfriend.domain.FindFriend;
-import com.swyp.playground.domain.findfriend.domain.PlayHistory;
 import jakarta.persistence.*;
 import lombok.*;
 
