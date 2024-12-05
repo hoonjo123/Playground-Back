@@ -28,9 +28,10 @@ public class FindFriend {
     @Column(name = "playground_id")
     private String playgroundId;
 
-    @Setter
     @Column(name = "playground_name")
     private String playgroundName;
+
+    private String nickname;
 
     @Column(name = "title")
     private String title;

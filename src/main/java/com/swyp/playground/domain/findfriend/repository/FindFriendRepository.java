@@ -26,5 +26,6 @@ public interface FindFriendRepository extends JpaRepository<FindFriend, Long> {
     Optional<FindFriend> findByOwner_ParentId(Long parentId);
 
     //내가 모집중이거나 놀고 있는 글 조회
-    Optional<FindFriend> findByOwner_Email(String email);
+    List<FindFriend> findByNickname(String nickname);
+
 }
