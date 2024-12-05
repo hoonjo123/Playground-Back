@@ -38,7 +38,6 @@ public class NoteController {
     // -- GET --
     @GetMapping("/all")
     public ResponseEntity<List<Note>> getAllNotes(@RequestHeader("Authorization") String token) {
-        if (redisService.isTokenValid(token)) { /* 유저 닉네임 -> 전체 조회 로직 구현 */ }
         return new ResponseEntity<List<Note>>(noteService.getAllNotes(), HttpStatus.OK);
     }
 
@@ -65,14 +64,9 @@ public class NoteController {
 
     // -- UPDATE --
     @PatchMapping
-    public ResponseEntity<String> updateNote(@RequestHeader("Authorization") String token,
-                                            @RequestParam Long id,
-                                            @RequestBody WriteNoteDto newNote) {
+    public ResponseEntity<String> updateNote(@RequestParam Long id, @RequestBody WriteNoteDto newNote) {
         try {
-            if (redisService.isTokenValid(token)) {
-                /* 유저 닉네임 -> 권한 확인 후 삭제 */
-                noteService.patchNoteById(id, newNote);
-            }
+            noteService.patchNoteById(id, newNote);
         } catch (Exception e) {
             // 디버깅 처리
             System.err.println(e);
@@ -82,12 +76,9 @@ public class NoteController {
 
     // -- DELETE --
     @DeleteMapping
-    public ResponseEntity<String> deleteNote(@RequestHeader("Authorization") String token, @RequestParam Long id) {
+    public ResponseEntity<String> deleteNote(@RequestParam Long id) {
         try {
-            if (redisService.isTokenValid(token)) {
-                /* 유저 닉네임 -> 권한 확인 후 삭제 */
-                noteService.deleteNote(id);
-            }
+            noteService.deleteNote(id);
         } catch (Exception e) {
             // 디버깅 처리
             System.err.println(e);
