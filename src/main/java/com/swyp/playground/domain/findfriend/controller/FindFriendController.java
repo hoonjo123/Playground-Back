@@ -107,6 +107,18 @@ public class FindFriendController {
         return ResponseEntity.ok(new Result<>(recentFriends));
     }
 
+    //온도 남기기
+    //최근 논 친구 목록
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/manner-temp")
+    public void leaveMannerTemp(@AuthenticationPrincipal UserDetails userDetails, @RequestBody LeaveMannerTempRequest leaveMannerTempRequest) {
+
+        String email = userDetails.getUsername();
+        findFriendService.leaveMannerTemp(email, leaveMannerTempRequest);
+    }
+
+
+
     @Data
     @AllArgsConstructor
     static class Result<T> {

@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -346,6 +347,24 @@ public class FindFriendService {
                         p.getProfileImg()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    //온도 남기기
+    public void leaveMannerTemp(String email, LeaveMannerTempRequest leaveMannerTempRequest) {
+        // 내 정보 조회
+        Parent me = parentRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("온도를 남기려는 사용자 정보를 찾을 수 없습니다."));
+        //온도가 남겨질 사용자 정보 조회
+        Parent parent = parentRepository.findByNickname(leaveMannerTempRequest.getNickname())
+                .orElseThrow(() -> new IllegalArgumentException("온도가 남겨질 사용자 정보를 찾을 수 없습니다."));
+
+        // 누적 온도 업데이트
+        BigDecimal newCumulativeTemp = parent.getMannerTemp()
+                .add(leaveMannerTempRequest.getMannerTemp());
+        parent.setMannerTemp(newCumulativeTemp);
+
+        // 온도 카운트 증가
+        parent.setMannerTempCount(parent.getMannerTempCount() + 1);
     }
 
     // 부모와 FindFriend의 startTime을 함께 저장할 수 있는 클래스
