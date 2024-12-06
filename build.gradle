@@ -59,6 +59,7 @@ dependencies {
 	implementation 'org.projectlombok:lombok:1.18.24'
 	annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
+	implementation 'software.amazon.awssdk:s3:2.20.0'
 }
 
 tasks.named('test') {

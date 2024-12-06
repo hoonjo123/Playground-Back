@@ -1,5 +1,6 @@
 package com.swyp.playground.domain.parent.service;
 
+import com.swyp.playground.common.S3.S3Service;
 import com.swyp.playground.common.domain.TypeChange;
 import com.swyp.playground.domain.parent.domain.Parent;
 import com.swyp.playground.domain.parent.dto.req.ParentCreateReqDto;
@@ -9,6 +10,7 @@ import com.swyp.playground.domain.parent.repository.ParentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +21,7 @@ public class ParentService {
     private final ParentRepository parentRepository;
     private final TypeChange typeChange;
     private final PasswordEncoder passwordEncoder;
+    private final S3Service s3Service;
 
     public ParentCreateResDto signUp(ParentCreateReqDto request) {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
@@ -71,5 +74,22 @@ public class ParentService {
 
         String encodedPassword = passwordEncoder.encode(newPassword);
         parentRepository.updatePasswordByEmail(email, encodedPassword);
+    }
+    public String uploadProfileImage(Long parentId, MultipartFile file) {
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + parentId));
+
+        try {
+            // 고유한 파일 이름 생성
+            String fileName = "profiles/" + parentId + "_" + file.getOriginalFilename();
+            String fileUrl = s3Service.uploadFile(fileName, file.getBytes());
+            parent.setProfileImg(fileUrl);
+
+            // 저장된 Parent 업데이트
+            parentRepository.save(parent);
+            return fileUrl;
+        } catch (Exception e) {
+            throw new RuntimeException("이미지 업로드 실패: " + e.getMessage(), e);
+        }
     }
 }
