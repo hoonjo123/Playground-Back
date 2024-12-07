@@ -25,6 +25,7 @@ public class EmailController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<CommonResponse> resetPassword(@RequestParam(value = "email") String email) throws Exception {
+        System.out.println("이메일" + email);
         // 이메일이 존재하지 않으면 에러 반환
         Parent parent = parentRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 이메일입니다."));

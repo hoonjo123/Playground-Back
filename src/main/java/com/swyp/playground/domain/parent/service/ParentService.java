@@ -127,19 +127,25 @@ public class ParentService {
     }
 
     private void updateChildren(Parent parent, List<ChildUpdateReqDto> children) {
+        // 기존 자녀 리스트 조회
+        List<Child> existingChildren = parent.getChildren();
+
         for (ChildUpdateReqDto childDto : children) {
             if (childDto.getId() != null) {
-                Child existingChild = parent.getChildren().stream()
+                // 기존 자녀 수정
+                Child existingChild = existingChildren.stream()
                         .filter(c -> c.getChildId().equals(childDto.getId()))
                         .findFirst()
                         .orElseThrow(() -> new IllegalArgumentException("해당 자녀를 찾을 수 없습니다: " + childDto.getId()));
                 typeChange.updateChildFromDto(existingChild, childDto);
             } else {
+                // 새로운 자녀 추가
                 Child newChild = typeChange.childDtoToChild(childDto);
                 parent.addChild(newChild);
             }
         }
     }
+
 
     public void deleteParentById(Long id) {
         parentRepository.findById(id)
@@ -171,7 +177,7 @@ public class ParentService {
     //email정보를 통해 Nickname 찾아오기
     public String getNicknameByEmail(String email) {
         Parent parent = parentRepository.findByEmail(email)
-               .orElseThrow(() -> new IllegalArgumentException("해당 이���일을 가진 사용자가 ���재하지 않습니다: " + email));
+               .orElseThrow(() -> new IllegalArgumentException("해당 이메일을 가진 사용자가 존재하지 않습니다: " + email));
         return parent.getNickname();
     }
 }

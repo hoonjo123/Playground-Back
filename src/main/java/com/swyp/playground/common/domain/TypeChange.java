@@ -43,6 +43,7 @@ public class TypeChange {
                 .introduce(parent.getIntroduce())
                 .childCount(parent.getChildCount())
                 .birthDate(parent.getBirthDate())
+                .phoneNumber(parent.getPhoneNumber())
                 .mannerTemp(parent.getMannerTemp())
                 .children(parent.getChildren().stream()
                         .map(child -> ParentCreateResDto.ChildDto.builder()

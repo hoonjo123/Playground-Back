@@ -51,6 +51,8 @@ public class ParentController {
         ParentCreateResDto response = parentService.getParentById(id);
         return ResponseEntity.ok(response);
     }
+
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping(value = "/users/edit/{id}", consumes = {"multipart/form-data"})
     public ResponseEntity<?> updateParent(
             @PathVariable Long id,
@@ -60,13 +62,11 @@ public class ParentController {
         try {
             // JSON 데이터를 DTO로 변환
             ParentUpdateReqDto request = objectMapper.readValue(requestData, ParentUpdateReqDto.class);
-
             String authenticatedEmail = authenticatedUser.getUsername();
             Parent parent = parentService.getParentEntityById(id);
             if (!parent.getEmail().equals(authenticatedEmail)) {
                 return ResponseEntity.status(403).body("자신의 정보만 수정할 수 있습니다.");
             }
-
             if (profileImage != null) {
                 request.setProfileImage(profileImage);
             }
@@ -92,6 +92,7 @@ public class ParentController {
         parentService.deleteParentById(id);
         return ResponseEntity.noContent().build();
     }
+
 
     @GetMapping("/get-nickname")
     public ResponseEntity<String> getNickname(@RequestParam String email){
