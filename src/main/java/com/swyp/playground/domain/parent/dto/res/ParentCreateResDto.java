@@ -19,6 +19,7 @@ public class ParentCreateResDto {
     private String address;
     private String introduce;
     private LocalDate birthDate;
+    private String phoneNumber;
     private ParentRoleType role;
     private Integer childCount;
     private BigDecimal mannerTemp;
