@@ -1,5 +1,6 @@
 package com.swyp.playground.domain.parent.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swyp.playground.common.response.CommonResponse;
 import com.swyp.playground.domain.parent.domain.Parent;
 import com.swyp.playground.domain.parent.dto.req.ParentCreateReqDto;
@@ -13,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,32 +24,59 @@ import java.util.List;
 public class ParentController {
 
     private final ParentService parentService;
+    private final ObjectMapper objectMapper;
 
-    @PostMapping("/signup")
-    public ResponseEntity<ParentCreateResDto> signUp(@Validated @RequestBody ParentCreateReqDto request) {
-        ParentCreateResDto response = parentService.signUp(request);
-        return ResponseEntity.ok(response);
+    @PostMapping(value = "/signup", consumes = {"multipart/form-data"})
+    public ResponseEntity<ParentCreateResDto> signUp(
+            @RequestPart("data") String requestData,
+            @RequestPart(value = "file", required = false) MultipartFile profileImage) {
+        try {
+            // JSON 데이터를 DTO로 변환
+            ParentCreateReqDto request = objectMapper.readValue(requestData, ParentCreateReqDto.class);
+
+            if (profileImage != null) {
+                request.setProfileImage(profileImage);
+            }
+
+            ParentCreateResDto response = parentService.signUp(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
+
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/users/{id}")
     public ResponseEntity<ParentCreateResDto> getParentById(@PathVariable Long id){
         ParentCreateResDto response = parentService.getParentById(id);
         return ResponseEntity.ok(response);
     }
-    @SecurityRequirement(name = "bearerAuth")
-    @PatchMapping("/users/edit/{id}")
-    public ResponseEntity<?> updateParent(@PathVariable Long id,
-                                          @Validated @RequestBody ParentUpdateReqDto request,
-                                          @AuthenticationPrincipal User authenticatedUser) {
-        String authenticatedEmail = authenticatedUser.getUsername();
-        Parent parent = parentService.getParentEntityById(id);
-        if (!parent.getEmail().equals(authenticatedEmail)) {
-            return ResponseEntity.status(403).body("자신의 정보만 수정할 수 있습니다.");
-        }
+    @PatchMapping(value = "/users/edit/{id}", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> updateParent(
+            @PathVariable Long id,
+            @RequestPart("data") String requestData,
+            @RequestPart(value = "file", required = false) MultipartFile profileImage,
+            @AuthenticationPrincipal User authenticatedUser) {
+        try {
+            // JSON 데이터를 DTO로 변환
+            ParentUpdateReqDto request = objectMapper.readValue(requestData, ParentUpdateReqDto.class);
 
-        ParentCreateResDto response = parentService.updateParent(id, request);
-        return ResponseEntity.ok(response);
+            String authenticatedEmail = authenticatedUser.getUsername();
+            Parent parent = parentService.getParentEntityById(id);
+            if (!parent.getEmail().equals(authenticatedEmail)) {
+                return ResponseEntity.status(403).body("자신의 정보만 수정할 수 있습니다.");
+            }
+
+            if (profileImage != null) {
+                request.setProfileImage(profileImage);
+            }
+            ParentCreateResDto response = parentService.updateParent(id, request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Invalid request: " + e.getMessage());
+        }
     }
+
 
 
     @SecurityRequirement(name = "bearerAuth")

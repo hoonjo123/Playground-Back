@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -22,4 +23,6 @@ public class ParentUpdateReqDto {
     private String introduce;
 
     private List<ChildUpdateReqDto> children;
+
+    private MultipartFile profileImage;
 }

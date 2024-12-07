@@ -36,6 +36,12 @@ public class ParentService {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         Parent parent = typeChange.parentCreateReqDtoToParent(request, encodedPassword);
 
+
+        if (request.getProfileImage() != null && !request.getProfileImage().isEmpty()) {
+            String fileUrl = uploadProfileImage(parent.getParentId(), request.getProfileImage());
+            parent.setProfileImg(fileUrl);
+        }
+
         if (request.getChildren() != null) {
             request.getChildren().forEach(childDto -> {
                 Child child = Child.builder()
@@ -83,6 +89,11 @@ public class ParentService {
 
         updateParentInfo(parent, request);
 
+        if (request.getProfileImage() != null && !request.getProfileImage().isEmpty()) {
+            String fileUrl = uploadProfileImage(parent.getParentId(), request.getProfileImage());
+            parent.setProfileImg(fileUrl);
+        }
+
         if (request.getChildren() != null) {
             // 자녀 정보 업데이트
             for (ChildUpdateReqDto childDto : request.getChildren()) {
@@ -104,6 +115,8 @@ public class ParentService {
         Parent updatedParent = parentRepository.save(parent);
         return typeChange.parentToParentCreateResDto(updatedParent);
     }
+
+
 
 
     private void updateParentInfo(Parent parent, ParentUpdateReqDto request) {
@@ -140,21 +153,12 @@ public class ParentService {
         String encodedPassword = passwordEncoder.encode(newPassword);
         parentRepository.updatePasswordByEmail(email, encodedPassword);
     }
-    public String uploadProfileImage(Long parentId, MultipartFile file) {
-        Parent parent = parentRepository.findById(parentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + parentId));
-
+    private String uploadProfileImage(Long parentId, MultipartFile file) {
         try {
-            // 고유한 파일 이름 생성
             String fileName = "profiles/" + parentId + "_" + file.getOriginalFilename();
-            String fileUrl = s3Service.uploadFile(fileName, file.getBytes());
-            parent.setProfileImg(fileUrl);
-
-            // 저장된 Parent 업데이트
-            parentRepository.save(parent);
-            return fileUrl;
+            return s3Service.uploadFile(fileName, file.getBytes());
         } catch (Exception e) {
-            throw new RuntimeException("이미지 업로드 실패: " + e.getMessage(), e);
+            throw new RuntimeException("프로필 이미지 업로드 실패: " + e.getMessage(), e);
         }
     }
 
