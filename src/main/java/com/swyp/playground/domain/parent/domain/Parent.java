@@ -2,7 +2,6 @@ package com.swyp.playground.domain.parent.domain;
 
 import com.swyp.playground.domain.child.domain.Child;
 import com.swyp.playground.domain.findfriend.domain.FindFriend;
-import com.swyp.playground.domain.findfriend.domain.PlayHistory;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -43,7 +42,7 @@ public class Parent {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private ParentRoleType role; // "아빠" 또는 "엄마"
+    private ParentRoleType role;
 
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
@@ -58,7 +57,7 @@ public class Parent {
     private String profileImg;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Child> children = new ArrayList<>();
+    private List<Child> children = new ArrayList<>(); // 리스트 초기화
 
     @Column(name = "introduce", length = 5000)
     private String introduce;
@@ -74,12 +73,17 @@ public class Parent {
     private FindFriend findFriend;
 
     public void addChild(Child child) {
+        if (this.children == null) {
+            this.children = new ArrayList<>();
+        }
         child.setParent(this);
         this.children.add(child);
     }
 
     public void removeChild(Child child) {
-        this.children.remove(child);
-        child.setParent(null);
+        if (this.children != null) {
+            this.children.remove(child);
+            child.setParent(null);
+        }
     }
 }

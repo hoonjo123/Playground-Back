@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,11 +36,19 @@ public class ParentController {
     }
     @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/users/edit/{id}")
-    public ResponseEntity<ParentCreateResDto> updateParent(@PathVariable Long id,
-                                                           @Validated @RequestBody ParentUpdateReqDto request) {
+    public ResponseEntity<?> updateParent(@PathVariable Long id,
+                                          @Validated @RequestBody ParentUpdateReqDto request,
+                                          @AuthenticationPrincipal User authenticatedUser) {
+        String authenticatedEmail = authenticatedUser.getUsername();
+        Parent parent = parentService.getParentEntityById(id);
+        if (!parent.getEmail().equals(authenticatedEmail)) {
+            return ResponseEntity.status(403).body("자신의 정보만 수정할 수 있습니다.");
+        }
+
         ParentCreateResDto response = parentService.updateParent(id, request);
         return ResponseEntity.ok(response);
     }
+
 
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/users/all")
