@@ -166,4 +166,12 @@ public class ParentService {
         return parentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다: " + id));
     }
+
+
+    //email정보를 통해 Nickname 찾아오기
+    public String getNicknameByEmail(String email) {
+        Parent parent = parentRepository.findByEmail(email)
+               .orElseThrow(() -> new IllegalArgumentException("해당 이���일을 가진 사용자가 ���재하지 않습니다: " + email));
+        return parent.getNickname();
+    }
 }
