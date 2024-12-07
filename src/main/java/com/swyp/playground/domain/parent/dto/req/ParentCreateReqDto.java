@@ -5,6 +5,7 @@ import com.swyp.playground.domain.parent.domain.ParentRoleType;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -60,7 +61,7 @@ public class ParentCreateReqDto {
     @Size(max = 5, message = "최대 5명의 자녀만 입력 가능합니다.")
     private List<ChildDto> children;
 
-
+    private MultipartFile profileImage;
     @Getter
     @Setter
     public static class ChildDto {
