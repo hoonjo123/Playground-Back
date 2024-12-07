@@ -92,4 +92,15 @@ public class ParentController {
         parentService.deleteParentById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/get-nickname")
+    public ResponseEntity<String> getNickname(@RequestParam String email){
+        try{
+            String nickname = parentService.getNicknameByEmail(email);
+            return ResponseEntity.ok(nickname);
+
+        }catch (IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
