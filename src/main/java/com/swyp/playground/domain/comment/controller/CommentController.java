@@ -35,21 +35,6 @@ public class CommentController {
     @Autowired
     private CommentService commentService;
 
-    @GetMapping("/all")
-    public ResponseEntity<List<Comment>> getAllComment() {
-        return new ResponseEntity<List<Comment>>(commentService.getAllComments(), HttpStatus.OK);
-    }
-
-    @GetMapping
-    public ResponseEntity<Optional<Comment>> getComment(@RequestParam Long id) {
-        return new ResponseEntity<Optional<Comment>>(commentService.getComment(id), HttpStatus.OK);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Comment>> getAllCommentByMatchId(@RequestParam Long matchId) {
-        return ResponseEntity.ok(commentService.getAllByMatchId(matchId));
-    }
-
     @PostMapping
     @SecurityRequirement(name="bearerAuth")
     public ResponseEntity<Comment> writeComment (@RequestBody WriteCommentDto writeCommentDto) {
@@ -65,7 +50,6 @@ public class CommentController {
         return new ResponseEntity<>(targetComment, HttpStatus.CREATED);
     }
 
-    /* -- GET -- */
     @GetMapping("/all")
     public ResponseEntity<List<Comment>> getAllComment() {
         return new ResponseEntity<List<Comment>>(commentService.getAllComments(), HttpStatus.OK);
@@ -76,7 +60,11 @@ public class CommentController {
         return new ResponseEntity<Optional<Comment>>(commentService.getComment(id), HttpStatus.OK);
     }
 
-    /* -- UPDATE -- */
+    @GetMapping
+    public ResponseEntity<List<Comment>> getAllCommentByMatchId(@RequestParam Long matchId) {
+        return ResponseEntity.ok(commentService.getAllByMatchId(matchId));
+    }
+
     @PatchMapping
     public ResponseEntity<String> updateComment(@RequestParam Long id,
                                     @RequestBody WriteCommentDto newComment) {
@@ -88,8 +76,6 @@ public class CommentController {
         return ResponseEntity.ok("댓글이 정상적으로 수정되었습니다.");
     }
 
-
-    /* -- DELETE -- */
     @DeleteMapping
     public ResponseEntity<String> deleteComment(@RequestParam Long id) {
         try {
