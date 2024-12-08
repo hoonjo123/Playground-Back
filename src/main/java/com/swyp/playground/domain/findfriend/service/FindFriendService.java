@@ -1,11 +1,9 @@
 package com.swyp.playground.domain.findfriend.service;
 
-import com.swyp.playground.domain.findfriend.domain.FindFriend;
-import com.swyp.playground.domain.findfriend.domain.PlayHistory;
-import com.swyp.playground.domain.findfriend.domain.RecruitmentStatus;
-import com.swyp.playground.domain.findfriend.domain.UserRole;
+import com.swyp.playground.domain.findfriend.domain.*;
 import com.swyp.playground.domain.findfriend.dto.*;
 import com.swyp.playground.domain.findfriend.repository.FindFriendRepository;
+import com.swyp.playground.domain.findfriend.repository.ParticipationHistoryRepository;
 import com.swyp.playground.domain.findfriend.repository.PlayHistoryRepository;
 import com.swyp.playground.domain.parent.domain.Parent;
 import com.swyp.playground.domain.parent.repository.ParentRepository;
@@ -33,6 +31,8 @@ public class FindFriendService {
     private final ParentRepository parentRepository;
 
     private final PlayHistoryRepository playHistoryRepository;
+
+    private final ParticipationHistoryRepository participationHistoryRepository;
 
 
     //놀이터 친구 모집글 목록 반환
@@ -257,7 +257,10 @@ public class FindFriendService {
         FindFriend findFriend = findFriendRepository.findById(findFriendId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글을 찾을 수 없습니다."));
 
-        if(action.equals("participate")){
+        log.info("action = " + action);
+
+        if("participate".equalsIgnoreCase(action.trim())){
+            log.info("참가 신청");
             Optional<FindFriend> ownerParent = findFriendRepository.findByOwner_ParentId(parent.getParentId());
             if(ownerParent.isPresent())
                 throw new IllegalArgumentException("이미 만든 친구 모집글이 있습니다.");
@@ -265,11 +268,32 @@ public class FindFriendService {
             if(parent.getFindFriend() != null){
                 throw new IllegalArgumentException("이미 참가한 방이 있습니다.");
             }
+
+            // 참가 기록 조회
+            Optional<ParticipationHistory> existingHistory = participationHistoryRepository.findByParentAndFindFriend(parent, findFriend);
+            if (existingHistory.isPresent()) {
+                ParticipationHistory participationHistory = existingHistory.get();
+
+                if (participationHistory.getParticipationCount() == 2) {
+                    throw new IllegalArgumentException("같은 방에 3번 이상 참가 신청은 불가능합니다.");
+                }
+                //참가신청 기록 +1
+                participationHistory.setParticipationCount(participationHistory.getParticipationCount() + 1);
+            }else{ //참가 기록이 없다면 만들어 두기
+                ParticipationHistory newParticipationHistory = ParticipationHistory.builder()
+                        .participationCount(1)
+                        .parent(parent)
+                        .findFriend(findFriend)
+                        .build();
+                participationHistoryRepository.save(newParticipationHistory);
+            }
+
             parent.setFindFriend(findFriend);
             findFriend.setCurrentCount(findFriend.getCurrentCount() + 1);
         }
 
-        if(action.equals("cancel")){
+        if("cancel".equalsIgnoreCase(action.trim())){
+            log.info("참가 취소");
             parent.setFindFriend(null);
             findFriend.setCurrentCount(findFriend.getCurrentCount() - 1);
         }
