@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -67,9 +69,11 @@ public class CommentController {
 
     @PatchMapping
     public ResponseEntity<String> updateComment(@RequestParam Long id,
-                                    @RequestBody WriteCommentDto newComment) {
+                                    @RequestBody WriteCommentDto newComment,
+                                    @AuthenticationPrincipal User user) {
+        String email = user.getUsername();
             try {
-                commentService.patchCommentById(id, newComment);
+                commentService.patchCommentById(id, newComment, email);
             } catch (Exception e) {
                 System.err.println(e);
             }
@@ -77,9 +81,11 @@ public class CommentController {
     }
 
     @DeleteMapping
-    public ResponseEntity<String> deleteComment(@RequestParam Long id) {
+    public ResponseEntity<String> deleteComment(@RequestParam Long id,
+                                    @AuthenticationPrincipal User user) {
+        String email = user.getUsername();
         try {
-            commentService.deleteComment(id);
+            commentService.deleteComment(id, email);
         } catch (Exception e) {
             System.err.println(e);
         }
