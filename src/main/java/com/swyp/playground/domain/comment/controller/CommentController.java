@@ -18,6 +18,8 @@ import com.swyp.playground.domain.comment.domain.Comment;
 import com.swyp.playground.domain.comment.dto.WriteCommentDto;
 import com.swyp.playground.domain.comment.service.CommentService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,7 +43,13 @@ public class CommentController {
         return new ResponseEntity<Optional<Comment>>(commentService.getComment(id), HttpStatus.OK);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Comment>> getAllCommentByMatchId(@RequestParam Long matchId) {
+        return ResponseEntity.ok(commentService.getAllByMatchId(matchId));
+    }
+
     @PostMapping
+    @SecurityRequirement(name="bearerAuth")
     public ResponseEntity<Comment> writeComment (@RequestBody WriteCommentDto writeCommentDto) {
         Comment targetComment = new Comment();
 
