@@ -65,8 +65,13 @@ public class Parent {
     @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;
 
-    @Column(name = "manner_temp", precision = 5, scale = 2, nullable = false)
+    @Column(name = "manner_temp", precision = 5, scale = 1, nullable = false)
     private BigDecimal mannerTemp;
+
+    @Builder.Default
+    @Column(name = "manner_temp_count")
+    private Integer mannerTempCount = 1;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "find_friend_id")

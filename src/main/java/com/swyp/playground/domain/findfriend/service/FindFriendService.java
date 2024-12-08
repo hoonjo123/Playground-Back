@@ -1,11 +1,9 @@
 package com.swyp.playground.domain.findfriend.service;
 
-import com.swyp.playground.domain.findfriend.domain.FindFriend;
-import com.swyp.playground.domain.findfriend.domain.PlayHistory;
-import com.swyp.playground.domain.findfriend.domain.RecruitmentStatus;
-import com.swyp.playground.domain.findfriend.domain.UserRole;
+import com.swyp.playground.domain.findfriend.domain.*;
 import com.swyp.playground.domain.findfriend.dto.*;
 import com.swyp.playground.domain.findfriend.repository.FindFriendRepository;
+import com.swyp.playground.domain.findfriend.repository.ParticipationHistoryRepository;
 import com.swyp.playground.domain.findfriend.repository.PlayHistoryRepository;
 import com.swyp.playground.domain.parent.domain.Parent;
 import com.swyp.playground.domain.parent.repository.ParentRepository;
@@ -15,6 +13,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -32,6 +32,8 @@ public class FindFriendService {
     private final ParentRepository parentRepository;
 
     private final PlayHistoryRepository playHistoryRepository;
+
+    private final ParticipationHistoryRepository participationHistoryRepository;
 
 
     //놀이터 친구 모집글 목록 반환
@@ -82,6 +84,7 @@ public class FindFriendService {
 
         //모집글 정보 생성
         return FindFriendInfoResponse.builder()
+                .findFriendId(findFriendId)
                 .playgroundName(findFriend.getPlaygroundName())
                 .recruitmentStatus(findFriend.getStatus().name())
                 .title(findFriend.getTitle())
@@ -256,7 +259,14 @@ public class FindFriendService {
         FindFriend findFriend = findFriendRepository.findById(findFriendId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글을 찾을 수 없습니다."));
 
-        if(action.equals("participate")){
+        if (parent.getMannerTemp().divide(BigDecimal.valueOf(parent.getMannerTempCount()), 1, RoundingMode.HALF_UP).compareTo(BigDecimal.valueOf(40.0)) < 0) {
+            log.info("40도 이하");
+            throw new IllegalArgumentException("매너온도가 40.0도 미만인 사용자는 참가할 수 없습니다.");
+        }
+
+        log.info("안걸림");
+
+        if("participate".equalsIgnoreCase(action.trim())){
             Optional<FindFriend> ownerParent = findFriendRepository.findByOwner_ParentId(parent.getParentId());
             if(ownerParent.isPresent())
                 throw new IllegalArgumentException("이미 만든 친구 모집글이 있습니다.");
@@ -264,11 +274,31 @@ public class FindFriendService {
             if(parent.getFindFriend() != null){
                 throw new IllegalArgumentException("이미 참가한 방이 있습니다.");
             }
+
+            // 참가 기록 조회
+            Optional<ParticipationHistory> existingHistory = participationHistoryRepository.findByParentAndFindFriend(parent, findFriend);
+            if (existingHistory.isPresent()) {
+                ParticipationHistory participationHistory = existingHistory.get();
+
+                if (participationHistory.getParticipationCount() == 2) {
+                    throw new IllegalArgumentException("같은 방에 3번 이상 참가 신청은 불가능합니다.");
+                }
+                //참가신청 기록 +1
+                participationHistory.setParticipationCount(participationHistory.getParticipationCount() + 1);
+            }else{ //참가 기록이 없다면 만들어 두기
+                ParticipationHistory newParticipationHistory = ParticipationHistory.builder()
+                        .participationCount(1)
+                        .parent(parent)
+                        .findFriend(findFriend)
+                        .build();
+                participationHistoryRepository.save(newParticipationHistory);
+            }
+
             parent.setFindFriend(findFriend);
             findFriend.setCurrentCount(findFriend.getCurrentCount() + 1);
         }
 
-        if(action.equals("cancel")){
+        if("cancel".equalsIgnoreCase(action.trim())){
             parent.setFindFriend(null);
             findFriend.setCurrentCount(findFriend.getCurrentCount() - 1);
         }
@@ -346,6 +376,24 @@ public class FindFriendService {
                         p.getProfileImg()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    //온도 남기기
+    public void leaveMannerTemp(String email, LeaveMannerTempRequest leaveMannerTempRequest) {
+        // 내 정보 조회
+        Parent me = parentRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("온도를 남기려는 사용자 정보를 찾을 수 없습니다."));
+        //온도가 남겨질 사용자 정보 조회
+        Parent parent = parentRepository.findByNickname(leaveMannerTempRequest.getNickname())
+                .orElseThrow(() -> new IllegalArgumentException("온도가 남겨질 사용자 정보를 찾을 수 없습니다."));
+
+        // 누적 온도 업데이트
+        BigDecimal newCumulativeTemp = parent.getMannerTemp()
+                .add(leaveMannerTempRequest.getMannerTemp());
+        parent.setMannerTemp(newCumulativeTemp);
+
+        // 온도 카운트 증가
+        parent.setMannerTempCount(parent.getMannerTempCount() + 1);
     }
 
     // 부모와 FindFriend의 startTime을 함께 저장할 수 있는 클래스

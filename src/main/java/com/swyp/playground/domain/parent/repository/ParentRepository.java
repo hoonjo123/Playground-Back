@@ -15,6 +15,8 @@ public interface ParentRepository extends JpaRepository<Parent,Long> {
     @Query("UPDATE Parent p SET p.password = :password WHERE p.email = :email")
     void updatePasswordByEmail(@Param("email") String email, @Param("password") String password);
 
+    Optional<Parent> findByNickname(String nickname);
+
     @Query("SELECT p FROM Parent p LEFT JOIN FETCH p.children WHERE p.parentId = :id")
     Optional<Parent> findParentWithChildren(@Param("id") Long id);
 
