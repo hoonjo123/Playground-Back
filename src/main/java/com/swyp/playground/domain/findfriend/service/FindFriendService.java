@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -83,6 +84,7 @@ public class FindFriendService {
 
         //모집글 정보 생성
         return FindFriendInfoResponse.builder()
+                .findFriendId(findFriendId)
                 .playgroundName(findFriend.getPlaygroundName())
                 .recruitmentStatus(findFriend.getStatus().name())
                 .title(findFriend.getTitle())
@@ -257,10 +259,14 @@ public class FindFriendService {
         FindFriend findFriend = findFriendRepository.findById(findFriendId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글을 찾을 수 없습니다."));
 
-        log.info("action = " + action);
+        if (parent.getMannerTemp().divide(BigDecimal.valueOf(parent.getMannerTempCount()), 1, RoundingMode.HALF_UP).compareTo(BigDecimal.valueOf(40.0)) < 0) {
+            log.info("40도 이하");
+            throw new IllegalArgumentException("매너온도가 40.0도 미만인 사용자는 참가할 수 없습니다.");
+        }
+
+        log.info("안걸림");
 
         if("participate".equalsIgnoreCase(action.trim())){
-            log.info("참가 신청");
             Optional<FindFriend> ownerParent = findFriendRepository.findByOwner_ParentId(parent.getParentId());
             if(ownerParent.isPresent())
                 throw new IllegalArgumentException("이미 만든 친구 모집글이 있습니다.");
@@ -293,7 +299,6 @@ public class FindFriendService {
         }
 
         if("cancel".equalsIgnoreCase(action.trim())){
-            log.info("참가 취소");
             parent.setFindFriend(null);
             findFriend.setCurrentCount(findFriend.getCurrentCount() - 1);
         }

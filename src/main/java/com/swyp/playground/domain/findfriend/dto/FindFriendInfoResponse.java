@@ -13,7 +13,7 @@ import java.util.List;
 public class FindFriendInfoResponse {
 
     @Builder
-    public FindFriendInfoResponse(String playgroundName, String recruitmentStatus, String title, String description, String scheduleTime, FindFriendOwnerInfoResponse owner, List<FindFriendParticipantsListResponse> participants) {
+    public FindFriendInfoResponse(Long findFriendId, String playgroundName, String recruitmentStatus, String title, String description, String scheduleTime, FindFriendOwnerInfoResponse owner, List<FindFriendParticipantsListResponse> participants) {
         this.playgroundName = playgroundName;
         this.recruitmentStatus = recruitmentStatus;
         this.title = title;
@@ -23,6 +23,7 @@ public class FindFriendInfoResponse {
         this.participants = participants;
     }
 
+    private Long findFriendId;
     private String playgroundName;
     private String recruitmentStatus;
     private String title;

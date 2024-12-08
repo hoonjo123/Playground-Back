@@ -12,7 +12,7 @@ public class FindFriendListResponse {
 
     @Builder
     public FindFriendListResponse(Long id, String playgroundName, String title, String description, String scheduleTime, String recruitmentStatus, Integer currentCount) {
-        this.id = id;
+        this.findFriendId = id;
         this.playgroundName = playgroundName;
         this.title = title;
         this.description = description;
@@ -20,7 +20,7 @@ public class FindFriendListResponse {
         this.recruitmentStatus = recruitmentStatus;
         this.currentCount = currentCount;
     }
-    private Long id;
+    private Long findFriendId;
 
     private String playgroundName;
 
