@@ -14,6 +14,7 @@ public class FindFriendInfoResponse {
 
     @Builder
     public FindFriendInfoResponse(Long findFriendId, String playgroundName, String recruitmentStatus, String title, String description, String scheduleTime, FindFriendOwnerInfoResponse owner, List<FindFriendParticipantsListResponse> participants) {
+        this.findFriendId = findFriendId;
         this.playgroundName = playgroundName;
         this.recruitmentStatus = recruitmentStatus;
         this.title = title;

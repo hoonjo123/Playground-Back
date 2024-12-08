@@ -9,6 +9,7 @@ import com.swyp.playground.domain.parent.domain.Parent;
 import com.swyp.playground.domain.parent.repository.ParentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,22 @@ public class FindFriendService {
     //놀이터 친구 모집글 목록 반환
     public List<FindFriendListResponse> getFindFriendList(String playgroundId) {
         List<FindFriend> findFriendList = findFriendRepository.findAllByPlaygroundIdOrderByCreatedAtDesc(playgroundId);
+        return findFriendList.stream()
+                .map(f -> FindFriendListResponse.builder()
+                        .id(f.getFindFriendId())
+                        .playgroundName(f.getPlaygroundName())
+                        .title(f.getTitle())
+                        .description(f.getDescription())
+                        .scheduleTime(formatSchedule(f.getStartTime(), f.getEndTime())) //포맷팅 시간으로 변경하여 추가
+                        .recruitmentStatus(f.getStatus().name())
+                        .currentCount(f.getCurrentCount())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    //친구 모집글 목록 3개 반환(메인페이지 최신 순)
+    public List<FindFriendListResponse> getMainFindFriendList(Pageable top3) {
+        List<FindFriend> findFriendList = findFriendRepository.findTop3ByCreatedAtDesc(top3);
         return findFriendList.stream()
                 .map(f -> FindFriendListResponse.builder()
                         .id(f.getFindFriendId())
@@ -131,6 +148,10 @@ public class FindFriendService {
         Optional<FindFriend> ownerParent = findFriendRepository.findByOwner_ParentId(parent.getParentId());
         if(ownerParent.isPresent())
             throw new IllegalArgumentException("이미 만든 친구 모집글이 있습니다.");
+
+        if(parent.getFindFriend() != null){
+            throw new IllegalArgumentException("이미 참가한 방이 있습니다.");
+        }
 
         // FindFriend 엔티티 객체 생성
         FindFriend findFriend = FindFriend.builder()
@@ -328,6 +349,7 @@ public class FindFriendService {
                 .collect(Collectors.toList());
     }
 
+    //나랑 논 친구 목록 조회
     public List<MyRecentFriendResponse> getRecentFriend(String email) {
 
         // 사용자 정보 조회
@@ -395,6 +417,8 @@ public class FindFriendService {
         // 온도 카운트 증가
         parent.setMannerTempCount(parent.getMannerTempCount() + 1);
     }
+
+
 
     // 부모와 FindFriend의 startTime을 함께 저장할 수 있는 클래스
     public static class ParentWithStartTime {
