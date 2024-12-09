@@ -62,9 +62,9 @@ public class CommentController {
         return new ResponseEntity<Optional<Comment>>(commentService.getComment(id), HttpStatus.OK);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Comment>> getAllCommentByMatchId(@RequestParam Long matchId) {
-        return ResponseEntity.ok(commentService.getAllByMatchId(matchId));
+    @GetMapping("/match")
+    public ResponseEntity<List<Comment>> getAllCommentByMatchId(@RequestParam Long id) {
+        return ResponseEntity.ok(commentService.getAllByMatchId(id));
     }
 
     @PatchMapping
