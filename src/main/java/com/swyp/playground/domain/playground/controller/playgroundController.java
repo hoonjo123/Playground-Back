@@ -4,10 +4,13 @@ import com.swyp.playground.domain.playground.dto.ApiResponse;
 import com.swyp.playground.domain.playground.dto.PlaygroundInfoResponse;
 import com.swyp.playground.domain.playground.exception.PlaygroundNotFoundException;
 import com.swyp.playground.domain.playground.service.PlaygroundService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,15 +26,21 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class playgroundController {
 
-    @Value("${api.key}")
-    private String serviceKey;  // API 인증키
+    @Value("${spring.api.playground-key}")
+    private String playgroundApiKey; // PLAYGROUND_API_KEY
+
+    @Value("${spring.api.address-key}")
+    private String addressApiKey; // ADDRESS_API_KEY
+
     private final RestTemplate restTemplate;
     private final PlaygroundService playgroundService;
 
 
+
     //놀이터 검색
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/playgrounds")
-    public ResponseEntity<PlaygroundInfoResponse> getPlaygroundInfo(@RequestParam String pfctNm) throws URISyntaxException {
+    public ResponseEntity<PlaygroundInfoResponse> getPlaygroundInfo(@RequestParam String pfctNm, @AuthenticationPrincipal UserDetails userDetails) throws URISyntaxException {
         //페이지 번호
         int pageIndex = 1;
 
@@ -44,7 +53,7 @@ public class playgroundController {
         //한글 검색 인코딩
         String encodedPfctNm = URLEncoder.encode(pfctNm, StandardCharsets.UTF_8);
 
-        String url = "http://apis.data.go.kr/1741000/pfc2/pfc/getPfctInfo2?serviceKey=" + serviceKey +
+        String url = "http://apis.data.go.kr/1741000/pfc2/pfc/getPfctInfo2?serviceKey=" + playgroundApiKey +
                 "&pageIndex=" + pageIndex +
                 "&recordCountPerPage=" + recordCountPerPage +
                 "&instlPlaceCd=" + instlPlaceCd +
@@ -59,7 +68,9 @@ public class playgroundController {
             throw new PlaygroundNotFoundException("검색하신 놀이터가 존재하지 않습니다.");
         }
 
-        PlaygroundInfoResponse playgroundInfoResponse = playgroundService.externalResponseToDto(externalResponse);
+        String email = userDetails.getUsername();
+
+        PlaygroundInfoResponse playgroundInfoResponse = playgroundService.externalResponseToDto(externalResponse, email, addressApiKey);
 
         return ResponseEntity.ok(playgroundInfoResponse);
     }
