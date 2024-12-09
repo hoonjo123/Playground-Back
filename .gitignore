@@ -38,3 +38,4 @@ out/
 
 #yml제외
 *.yml
+.DS_Store
