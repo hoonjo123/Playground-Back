@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,9 +32,16 @@ public class FindFriendController {
         return ResponseEntity.ok(new Result<>(findFriendList));
     }
 
+    //친구 모집글 목록 3개(메인페이지)
+    @GetMapping("/find-friend-list")
+    public ResponseEntity<Result> findMainFindFriendList() {
+        Pageable top3 = PageRequest.of(0, 3); // 메인 페이지, 3개의 결과
+        List<FindFriendListResponse> findFriendList = findFriendService.getMainFindFriendList(top3);
+        return ResponseEntity.ok(new Result<>(findFriendList));
+    }
     //친구 모집글 정보 조회
     @GetMapping("/find-friend/{findFriendId}")
-    public ResponseEntity<FindFriendInfoResponse> findFindFriendInfo(@PathVariable String playgroundId, @PathVariable Long findFriendId) {
+    public ResponseEntity<FindFriendInfoResponse> findFindFriendInfo(@PathVariable Long findFriendId) {
         FindFriendInfoResponse findFriendInfo = findFriendService.getFindFriendInfo(findFriendId);
         return ResponseEntity.ok(findFriendInfo);
     }
