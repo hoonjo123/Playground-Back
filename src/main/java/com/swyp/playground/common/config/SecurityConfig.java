@@ -36,7 +36,9 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/auth/signup",
                                 "/auth/login",
-                                "/auth/reset-password"
+                                "/auth/reset-password",
+                                "/find-friend-list/**",
+                                "/find-friend/**"
                                 ).permitAll()
                         .anyRequest().authenticated()
                 )
