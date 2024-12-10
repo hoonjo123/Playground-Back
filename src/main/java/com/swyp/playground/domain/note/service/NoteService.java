@@ -20,12 +20,10 @@ public class NoteService {
     @Autowired
     private ParentRepository parentRepository;
     
-    /* -- POST -- */
     public Note sendNote(Note note) {
         return noteRepository.save(note);
     }
 
-    /* -- GET -- */
     public List<Note> getAllNotes(String email) {
         String targetId = parentRepository.findByEmail(email).get().getNickname();
         return noteRepository.findAllByTargetId(targetId);
@@ -36,7 +34,6 @@ public class NoteService {
         .orElseThrow(() -> new NullPointerException("해당 쪽지가 존재하지 않습니다."));
     }
 
-    /* -- UPDATE -- */
     public void patchNoteById(Long id, WriteNoteDto newNote, String email) {
         try {
             Note prevNote = noteRepository.findById(id)
@@ -55,7 +52,6 @@ public class NoteService {
         }
     }
 
-    /* -- DELETE -- */
     public void deleteNote(Long id, String email) {
         String nickname = parentRepository.findByEmail(email).get().getNickname();
         String writtenBy = noteRepository.findById(id).get().getWrittenBy();
