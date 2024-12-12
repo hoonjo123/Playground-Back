@@ -22,6 +22,7 @@ import com.swyp.playground.domain.report.dto.AddReportDto;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 
 
@@ -43,6 +44,7 @@ public class ReportController {
     }
 
     @PostMapping
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Report> addReport (@RequestBody AddReportDto addReportDto) {
         Report targetReport = new Report();
 

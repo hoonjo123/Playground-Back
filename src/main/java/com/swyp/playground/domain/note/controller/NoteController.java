@@ -51,7 +51,6 @@ public class NoteController {
     public ResponseEntity<Note> sendNote(@RequestBody WriteNoteDto writeNoteDto) {
         Note targetNote = new Note();
 
-        targetNote.setNoteId(writeNoteDto.getNoteId());
         targetNote.setTargetNickname(writeNoteDto.getTargetNickname());
         targetNote.setContent(writeNoteDto.getContent());
         targetNote.setWrittenBy(writeNoteDto.getWrittenBy());

@@ -25,8 +25,8 @@ public class NoteService {
     }
 
     public List<Note> getAllNotes(String email) {
-        String targetId = parentRepository.findByEmail(email).get().getNickname();
-        return noteRepository.findAllByTargetId(targetId);
+        String targetNickname = parentRepository.findByEmail(email).get().getNickname();
+        return noteRepository.findAllByTargetNickname(targetNickname);
     }
 
     public Note getNoteById(Long id) {
