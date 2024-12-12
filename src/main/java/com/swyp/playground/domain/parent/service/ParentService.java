@@ -6,6 +6,7 @@ import com.swyp.playground.domain.child.domain.Child;
 import com.swyp.playground.domain.child.dto.req.ChildUpdateReqDto;
 import com.swyp.playground.domain.parent.domain.Parent;
 import com.swyp.playground.domain.parent.dto.req.ParentCreateReqDto;
+import com.swyp.playground.domain.parent.dto.req.ParentPasswordChangeReqDto;
 import com.swyp.playground.domain.parent.dto.req.ParentUpdateReqDto;
 import com.swyp.playground.domain.parent.dto.res.ParentCreateResDto;
 import com.swyp.playground.domain.parent.repository.ParentRepository;
@@ -179,5 +180,24 @@ public class ParentService {
         Parent parent = parentRepository.findByEmail(email)
                .orElseThrow(() -> new IllegalArgumentException("해당 이메일을 가진 사용자가 존재하지 않습니다: " + email));
         return parent.getNickname();
+    }
+    public void changePassword(Long parentId, ParentPasswordChangeReqDto request) {
+        Parent parent = parentRepository.findById(parentId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), parent.getPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        if (!request.getNewPassword().equals(request.getNewPasswordConfirm())) {
+            throw new IllegalArgumentException("새로운 비밀번호가 일치하지 않습니다.");
+        }
+
+        if (request.getCurrentPassword().equals(request.getNewPassword())) {
+            throw new IllegalArgumentException("새로운 비밀번호가 현재 비밀번호와 같습니다.");
+        }
+
+        String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
+        parent.setPassword(encodedNewPassword);
     }
 }

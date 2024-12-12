@@ -4,14 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swyp.playground.common.response.CommonResponse;
 import com.swyp.playground.domain.parent.domain.Parent;
 import com.swyp.playground.domain.parent.dto.req.ParentCreateReqDto;
+import com.swyp.playground.domain.parent.dto.req.ParentPasswordChangeReqDto;
 import com.swyp.playground.domain.parent.dto.req.ParentUpdateReqDto;
 import com.swyp.playground.domain.parent.dto.res.ParentCreateResDto;
+import com.swyp.playground.domain.parent.dto.res.ParentPasswordChangeResDto;
 import com.swyp.playground.domain.parent.service.ParentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +29,7 @@ public class ParentController {
 
     private final ParentService parentService;
     private final ObjectMapper objectMapper;
+
 
     @PostMapping(value = "/signup", consumes = {"multipart/form-data"})
     public ResponseEntity<ParentCreateResDto> signUp(
@@ -102,6 +107,25 @@ public class ParentController {
 
         }catch (IllegalArgumentException e){
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/password/{parentId}")
+    public ResponseEntity<?> changePassword(
+            @PathVariable Long parentId,
+            @Valid @RequestBody ParentPasswordChangeReqDto request,
+            @AuthenticationPrincipal User authenticatedUser) {
+        try {
+            String authenticatedEmail = authenticatedUser.getUsername();
+            Parent parent = parentService.getParentEntityById(parentId);
+            if (!parent.getEmail().equals(authenticatedEmail)) {
+                return ResponseEntity.status(403).body("자신의 비밀번호만 변경할 수 있습니다.");
+            }
+            parentService.changePassword(parentId, request);
+            return ResponseEntity.ok(new ParentPasswordChangeResDto("비밀번호가 성공적으로 변경되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("비밀번호 변경 실패: " + e.getMessage());
         }
     }
 }
