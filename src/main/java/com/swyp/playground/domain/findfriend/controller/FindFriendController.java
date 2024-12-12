@@ -9,9 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,17 +25,17 @@ public class FindFriendController {
 
     //놀이터 별 친구 모집글 목록 조회(최신순)
     @GetMapping("/find-friend-list/{playgroundId}")
-    public ResponseEntity<Result> findFindFriendList(@PathVariable String playgroundId) {
+    public ResponseEntity<ResultFindFriendListResponse> findFindFriendList(@PathVariable String playgroundId) {
         List<FindFriendListResponse> findFriendList = findFriendService.getFindFriendList(playgroundId);
-        return ResponseEntity.ok(new Result<>(findFriendList));
+        return ResponseEntity.ok(new ResultFindFriendListResponse(findFriendList));
     }
 
     //친구 모집글 목록 3개(메인페이지)
     @GetMapping("/find-friend-list")
-    public ResponseEntity<Result> findMainFindFriendList() {
+    public ResponseEntity<ResultFindFriendListResponse> findMainFindFriendList() {
         Pageable top3 = PageRequest.of(0, 3); // 메인 페이지, 3개의 결과
         List<FindFriendListResponse> findFriendList = findFriendService.getMainFindFriendList(top3);
-        return ResponseEntity.ok(new Result<>(findFriendList));
+        return ResponseEntity.ok(new ResultFindFriendListResponse(findFriendList));
     }
     //친구 모집글 정보 조회
     @GetMapping("/find-friend/{findFriendId}")
@@ -49,13 +47,13 @@ public class FindFriendController {
     //친구 모집글 등록
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/find-friend/{playgroundId}")
-    public Long registerFindFriend(@PathVariable String playgroundId,
+    public void registerFindFriend(@PathVariable String playgroundId,
                                    @RequestBody @Valid FindFriendRegisterRequest findFriendRegisterRequest,
                                    @AuthenticationPrincipal UserDetails userDetails){
 
         String email = userDetails.getUsername();
 
-        return findFriendService.registerFindFriend(playgroundId, email,  findFriendRegisterRequest);
+        findFriendService.registerFindFriend(playgroundId, email,  findFriendRegisterRequest);
     }
 
     //친구 모집글 수정
@@ -97,23 +95,23 @@ public class FindFriendController {
     //내가 모집했던 글 조회(최신순)
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/find-friend/my")
-    public ResponseEntity<Result> myFindFindFriendList(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ResultFindFriendListResponse> myFindFindFriendList(@AuthenticationPrincipal UserDetails userDetails) {
 
         String email = userDetails.getUsername();
 
         List<FindFriendListResponse> findFriendList = findFriendService.getMyFindFriendList(email);
-        return ResponseEntity.ok(new Result<>(findFriendList));
+        return ResponseEntity.ok(new ResultFindFriendListResponse(findFriendList));
     }
 
     //최근 논 친구 목록
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/find-friend/recent")
-    public ResponseEntity<Result> getRecentFriend(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ResultMyRecentFriendResponse> getRecentFriend(@AuthenticationPrincipal UserDetails userDetails) {
 
         String email = userDetails.getUsername();
         List<MyRecentFriendResponse> recentFriends = findFriendService.getRecentFriend(email);
 
-        return ResponseEntity.ok(new Result<>(recentFriends));
+        return ResponseEntity.ok(new ResultMyRecentFriendResponse(recentFriends));
     }
 
     //온도 남기기
@@ -129,8 +127,16 @@ public class FindFriendController {
 
     @Data
     @AllArgsConstructor
-    static class Result<T> {
-        private T data;
+    static class ResultFindFriendListResponse {
+        private List<FindFriendListResponse> data;
     }
+
+    @Data
+    @AllArgsConstructor
+    static class ResultMyRecentFriendResponse {
+        private List<MyRecentFriendResponse> data;
+    }
+
+
 
 }
