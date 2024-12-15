@@ -22,20 +22,22 @@ public class JwtTokenProvider {
 
 
     // JWT 생성
-    public String generateToken(String email,String nickname) {
+    public String generateToken(String email,String nickname, Long parentId) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("nickname",nickname)
+                .claim("parentId", parentId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
     }
 
-    public String generateRefreshToken(String email,String nickname) {
+    public String generateRefreshToken(String email,String nickname, Long parentId) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("nickname",nickname)
+                .claim("parentId", parentId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + refreshExpiration))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
@@ -71,5 +73,12 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
         return claims.get("nickname", String.class);
+    }
+    public Long getParentIdFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(secretKey)
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("parentId", Long.class);
     }
 }
