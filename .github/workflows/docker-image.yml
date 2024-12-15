@@ -25,6 +25,11 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
+    - name: Build with Gradle
+      run: |
+          chmod +x ./gradlew
+          ./gradlew clean build -x test
+
     - name: Docker build & push to docker repo
       run: |
         echo ${{ secrets.DOCKER_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
