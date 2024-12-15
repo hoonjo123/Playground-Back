@@ -26,10 +26,8 @@ jobs:
       uses: docker/setup-buildx-action@v2
 
     - name: Docker build & push to docker repo
-      env:
-          DOCKER_TOKEN: ${{ env.DOCKER_ACCESS_TOKEN }}
       run: |
-        echo $DOCKER_TOKEN | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        echo ${{ secrets.DOCKER_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
         docker buildx build --platform linux/amd64 -t johoon/playground-backend:latest --push .
 
     - name: Deploy to instance
