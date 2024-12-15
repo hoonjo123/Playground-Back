@@ -44,9 +44,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 if (refreshToken != null && tokenProvider.validateToken(refreshToken)) {
                     String email = tokenProvider.getEmailFromToken(refreshToken);
                     String nickname = tokenProvider.getNicknameFromToken(refreshToken);
+                    Long parentId = tokenProvider.getParentIdFromToken(refreshToken);
                     if (redisService.isTokenValid(refreshToken)) {
                         // 새 액세스 토큰 발급
-                        String newAccessToken = tokenProvider.generateToken(email,nickname);
+                        String newAccessToken = tokenProvider.generateToken(email,nickname,parentId);
                         response.setHeader("Access-Token", newAccessToken);
                         authenticateUser(newAccessToken);
                     } else {
@@ -71,8 +72,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private void authenticateUser(String token) {
         String email = tokenProvider.getEmailFromToken(token);
         String nickname = tokenProvider.getNicknameFromToken(token);
+        Long parentId = tokenProvider.getParentIdFromToken(token);
         UserDetails userDetails = new User(email, "", Collections.emptyList());
-        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, nickname, userDetails.getAuthorities());
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                userDetails, parentId, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 

@@ -148,10 +148,14 @@ public class ParentService {
     }
 
     public void deleteParentByEmail(String email) {
+        System.out.println("서비스 호출 - 이메일: " + email);
+
         Parent parent = parentRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("해당 이메일을 가진 사용자가 존재하지 않습니다: " + email));
         parentRepository.delete(parent);
     }
+
+
 
 
     public void deleteParentById(Long id) {

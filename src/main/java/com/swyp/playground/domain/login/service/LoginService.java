@@ -36,8 +36,9 @@ public class LoginService {
 
         // JWT 토큰 생성
         String nickname = parent.getNickname(); // Parent 객체에서 닉네임 가져오기
-        String token = tokenProvider.generateToken(email, nickname);
-        String refreshToken = tokenProvider.generateRefreshToken(email, nickname);
+        Long parentId = parent.getParentId();
+        String token = tokenProvider.generateToken(email, nickname, parentId);
+        String refreshToken = tokenProvider.generateRefreshToken(email, nickname, parentId);
 
         // Redis에 토큰 저장
         redisService.saveAccessToken(email, nickname, token, 3600000); // Access Token: 1시간 유지
