@@ -25,6 +25,9 @@ public class Note {
     @Column(name="WRITTEN_BY", nullable=false)
     private String writtenBy;
 
+    @Column(name="WRITER_ID", nullable=false)
+    private Long writerId;
+
     @Column(name="SENT_AT", nullable=false)
     private Date sentAt;
 }
