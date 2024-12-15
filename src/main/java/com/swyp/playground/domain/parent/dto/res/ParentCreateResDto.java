@@ -24,6 +24,7 @@ public class ParentCreateResDto {
     private Integer childCount;
     private BigDecimal mannerTemp;
     private List<ChildDto> children; // 자녀 정보 추가
+    private String profileImg;
 
     @Getter
     @Builder

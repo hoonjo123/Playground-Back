@@ -53,6 +53,7 @@ public class TypeChange {
                                 .age(child.getAge())
                                 .build())
                         .collect(Collectors.toList()))
+                .profileImg(parent.getProfileImg())
                 .build();
     }
     // ChildUpdateReqDto -> Child 엔티티 변환 (새로운 자녀 추가)
