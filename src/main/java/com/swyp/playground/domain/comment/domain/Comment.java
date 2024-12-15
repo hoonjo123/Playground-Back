@@ -27,5 +27,8 @@ public class Comment {
     private String writtenBy;
 
     @Column(nullable = false)
+    private Long writerId;
+
+    @Column(nullable = false)
     private Date sentAt;
 }

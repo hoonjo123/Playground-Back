@@ -42,7 +42,8 @@ public class SecurityConfig {
                                 "/auth/login",
                                 "/auth/reset-password",
                                 "/find-friend-list/**",
-                                "/find-friend/**"
+                                "/find-friend/**",
+                                "/comment/**"
                                 ).permitAll()
                         .anyRequest().authenticated()
                 )

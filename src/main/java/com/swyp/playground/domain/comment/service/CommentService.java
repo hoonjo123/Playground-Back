@@ -22,6 +22,8 @@ public class CommentService {
     private ParentRepository parentRepository;
 
     public Comment writeComment(Comment comment) {
+        Long parentId = parentRepository.findByNickname(comment.getWrittenBy()).get().getParentId();
+        comment.setWriterId(parentId);
         return commentRepository.save(comment);
     }
 
