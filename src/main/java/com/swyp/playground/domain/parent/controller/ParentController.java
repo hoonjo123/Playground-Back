@@ -98,9 +98,9 @@ public class ParentController {
     }
 
     @SecurityRequirement(name = "bearerAuth")
-    @DeleteMapping("/users/delete/{id}")
-    public ResponseEntity<Void> deleteParent(@PathVariable Long id) {
-        parentService.deleteParentById(id);
+    @DeleteMapping("/users/delete")
+    public ResponseEntity<Void> deleteParentByEmail(@RequestParam String email) {
+        parentService.deleteParentByEmail(email);
         return ResponseEntity.noContent().build();
     }
 
