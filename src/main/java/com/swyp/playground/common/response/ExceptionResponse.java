@@ -1,6 +1,7 @@
 package com.swyp.playground.common.response;
 
 
+import com.swyp.playground.domain.playground.exception.PlaygroundNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,6 +19,10 @@ import java.util.Arrays;
 public class ExceptionResponse {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<CommonResponse> AllExceptionHandler(Exception e){
+
+        if (e instanceof PlaygroundNotFoundException) {
+            return CommonResponse.responseMessage(HttpStatus.NOT_FOUND, e.getMessage());
+        }
 
         if(e instanceof MethodArgumentNotValidException){
             String errorMessage = ((MethodArgumentNotValidException) e).getBindingResult()
