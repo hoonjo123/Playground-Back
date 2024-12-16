@@ -64,10 +64,6 @@ public class playgroundController {
         //외부 API에 요청
         ApiResponse externalResponse = restTemplate.getForObject(uri, ApiResponse.class);
 
-        if (externalResponse.getResponse().getBody().getTotalCnt() == 0) {
-            throw new PlaygroundNotFoundException("검색하신 놀이터가 존재하지 않습니다.");
-        }
-
         String email = userDetails.getUsername();
 
         PlaygroundInfoResponse playgroundInfoResponse = playgroundService.externalResponseToDto(externalResponse, email, addressApiKey);
