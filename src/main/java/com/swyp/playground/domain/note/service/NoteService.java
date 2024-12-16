@@ -21,6 +21,8 @@ public class NoteService {
     private ParentRepository parentRepository;
     
     public Note sendNote(Note note) {
+        Long parentId = parentRepository.findByNickname(note.getWrittenBy()).get().getParentId();
+        note.setWriterId(parentId);
         return noteRepository.save(note);
     }
 
