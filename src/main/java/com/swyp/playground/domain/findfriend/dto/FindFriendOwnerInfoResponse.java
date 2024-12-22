@@ -11,11 +11,15 @@ import lombok.Setter;
 public class FindFriendOwnerInfoResponse {
 
     @Builder
-    public FindFriendOwnerInfoResponse(String nickname, String role, String address, String profileImg) {
+    public FindFriendOwnerInfoResponse(Long id, String nickname, String role, String address, String profileImg) {
+        this.id = id;
         this.nickname = nickname;
         this.role = role;
         this.address = address;
+        this.profileImg = profileImg;
     }
+
+    private Long id;
 
     private String nickname;
 

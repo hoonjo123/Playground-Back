@@ -11,9 +11,13 @@ import lombok.Setter;
 public class FindFriendParticipantsListResponse {
 
     @Builder
-    public FindFriendParticipantsListResponse(String nickname, String profileImg) {
+    public FindFriendParticipantsListResponse(Long id, String nickname, String profileImg) {
+        this.id = id;
         this.nickname = nickname;
+        this.profileImg = profileImg;
     }
+
+    private Long id;
 
     private String nickname;
 
