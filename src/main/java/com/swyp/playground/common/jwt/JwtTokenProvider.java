@@ -14,7 +14,7 @@ public class JwtTokenProvider {
     @Value("${jwt.secret:default-secret-key}")
     private String secretKey;
 
-    @Value("${jwt.expiration:3600000}")
+    @Value("${jwt.expiration:21600000}")
     private long expiration;
 
     @Value("${jwt.refresh-expiration:604800000}")
