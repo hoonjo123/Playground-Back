@@ -20,7 +20,7 @@ public class Report {
     @Column(nullable = false)
     private String targetNickname;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Long findFriendId;
 
     @Column(nullable = true)
