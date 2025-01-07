@@ -23,7 +23,7 @@ public class Report {
     @Column(nullable = false)
     private Long findFriendId;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String cause;
 
     @Column(nullable = false)

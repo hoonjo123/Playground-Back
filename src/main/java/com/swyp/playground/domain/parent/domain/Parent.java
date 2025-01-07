@@ -69,9 +69,12 @@ public class Parent {
     private BigDecimal mannerTemp;
 
     @Builder.Default
+    @Column(name = "total_manner_temp")
+    private BigDecimal totalMannerTemp = BigDecimal.valueOf(50);
+
+    @Builder.Default
     @Column(name = "manner_temp_count")
     private Integer mannerTempCount = 1;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "find_friend_id")

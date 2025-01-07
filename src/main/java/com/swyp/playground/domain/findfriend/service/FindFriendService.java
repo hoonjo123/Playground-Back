@@ -411,13 +411,23 @@ public class FindFriendService {
         Parent parent = parentRepository.findByNickname(leaveMannerTempRequest.getNickname())
                 .orElseThrow(() -> new IllegalArgumentException("온도가 남겨질 사용자 정보를 찾을 수 없습니다."));
 
-        // 누적 온도 업데이트
-        BigDecimal newCumulativeTemp = parent.getMannerTemp()
-                .add(leaveMannerTempRequest.getMannerTemp());
-        parent.setMannerTemp(newCumulativeTemp);
-
         // 온도 카운트 증가
         parent.setMannerTempCount(parent.getMannerTempCount() + 1);
+
+        // 누적 온도 업데이트
+        BigDecimal newCumulativeTemp = leaveMannerTempRequest.getMannerTemp().add(parent.getTotalMannerTemp());
+        parent.setTotalMannerTemp(newCumulativeTemp);
+
+        parent.setMannerTemp(
+            newCumulativeTemp.divide(new BigDecimal(parent.getMannerTempCount()), 2, RoundingMode.HALF_UP) // 소수점 2자리로 반올림
+        );
+
+        int isLimit = parent.getMannerTemp().compareTo(BigDecimal.valueOf(100));
+
+        // 온도 상한선 제한 (100도)
+        if (isLimit > 0)
+            parent.setMannerTemp(BigDecimal.valueOf(100));
+
     }
 
 
