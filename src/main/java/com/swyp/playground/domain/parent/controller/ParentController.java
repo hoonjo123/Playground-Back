@@ -133,6 +133,25 @@ public class ParentController {
             return ResponseEntity.ok("false");
     }
 
+    @GetMapping("/check-email")
+    @Operation(summary = "사용자 이메일 중복 체크", description = "이메일을 입력하면, 중복된 이메일이 있는지 조회하여 결과를 제공합니다. 반환값으로 중복시 참 값을 반환하게 됩니다.")
+    public ResponseEntity<String> checkEmail(@RequestParam String email) {
+        boolean isDuplicated = parentService.isEmailDuplicate(email);
+        if (isDuplicated)
+            return ResponseEntity.ok("true");
+        else
+            return ResponseEntity.ok("false");
+    }
+
+    @GetMapping("/check-phonenumber")
+    @Operation(summary = "사용자 전화번호 중복 체크", description = "전화번호를 입력하면, 중복된 전화번호가 있는지 조회하여 결과를 제공합니다. 반환값으로 중복시 참 값을 반환하게 됩니다.")
+    public ResponseEntity<String> checkPhoneNumber(@RequestParam String phoneNumber) {
+        boolean isDuplicated = parentService.isPhoneNumberDuplicate(phoneNumber);
+        if (isDuplicated)
+            return ResponseEntity.ok("true");
+        else
+            return ResponseEntity.ok("false");
+    }
 
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/password/{parentId}")
