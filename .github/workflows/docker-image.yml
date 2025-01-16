@@ -40,7 +40,7 @@ jobs:
       id: deploy
       with: 
         host: ${{ secrets.SERVER_ADDRESS }}
-        username: playground
+        username: keepsideproject
         key: ${{ secrets.SERVER_SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         envs: GITHUB_SHA
