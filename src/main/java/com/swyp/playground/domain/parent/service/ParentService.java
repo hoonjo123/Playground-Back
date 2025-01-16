@@ -58,8 +58,17 @@ public class ParentService {
         Parent savedParent = parentRepository.save(parent);
         return typeChange.parentToParentCreateResDto(savedParent);
     }
-    private boolean isPhoneNumberDuplicate(String phoneNumber) {
+    
+    public boolean isPhoneNumberDuplicate(String phoneNumber) {
         return parentRepository.findByPhoneNumber(phoneNumber).isPresent();
+    }
+
+    public boolean isEmailDuplicate(String email) {
+        return parentRepository.findByEmail(email).isPresent();
+    }
+
+    public boolean isNicknameDuplicate(String nickname) {
+        return parentRepository.findByNickname(nickname).isPresent();
     }
 
     // 생년월일로 나이 계산 메서드 추가
@@ -117,9 +126,6 @@ public class ParentService {
         return typeChange.parentToParentCreateResDto(updatedParent);
     }
 
-
-
-
     private void updateParentInfo(Parent parent, ParentUpdateReqDto request) {
         if (request.getNickname() != null) parent.setNickname(request.getNickname());
         if (request.getAddress() != null) parent.setAddress(request.getAddress());
@@ -154,9 +160,6 @@ public class ParentService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 이메일을 가진 사용자가 존재하지 않습니다: " + email));
         parentRepository.delete(parent);
     }
-
-
-
 
     public void deleteParentById(Long id) {
         parentRepository.findById(id)

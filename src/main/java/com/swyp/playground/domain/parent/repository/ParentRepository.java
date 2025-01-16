@@ -24,5 +24,4 @@ public interface ParentRepository extends JpaRepository<Parent,Long> {
     boolean isPhoneNumberDuplicate(@Param("phoneNumber") String phoneNumber);
 
     Optional<Parent> findByPhoneNumber(String phoneNumber);
-
 }

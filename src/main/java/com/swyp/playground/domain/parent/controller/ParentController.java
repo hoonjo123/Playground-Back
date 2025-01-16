@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -120,6 +121,16 @@ public class ParentController {
             errorResponse.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }
+    }
+
+    @GetMapping("/check-nickname")
+    @Operation(summary = "사용자 닉네임 중복 체크", description = "닉네임을 입력하면, 중복된 닉네임이 있는지 조회하여 결과를 제공합니다. 반환값으로 중복시 참 값을 반환하게 됩니다.")
+    public ResponseEntity<String> checkNickname(@RequestParam String nickname) {
+        boolean isDuplicated = parentService.isNicknameDuplicate(nickname);
+        if (isDuplicated)
+            return ResponseEntity.ok("true");
+        else
+            return ResponseEntity.ok("false");
     }
 
 
