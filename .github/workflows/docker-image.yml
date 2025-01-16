@@ -38,10 +38,11 @@ jobs:
     - name: Deploy to instance
       uses: appleboy/ssh-action@master
       id: deploy
-      with:
+      with: 
         host: ${{ secrets.SERVER_ADDRESS }}
         username: playground
         key: ${{ secrets.SERVER_SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
         envs: GITHUB_SHA
         script: |
           sudo docker rm -f $(docker ps -qa)
