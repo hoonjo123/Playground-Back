@@ -11,6 +11,9 @@ import com.swyp.playground.domain.parent.dto.req.ParentUpdateReqDto;
 import com.swyp.playground.domain.parent.dto.res.ParentCreateResDto;
 import com.swyp.playground.domain.parent.repository.ParentRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,36 +31,45 @@ public class ParentService {
     private final TypeChange typeChange;
     private final PasswordEncoder passwordEncoder;
     private final S3Service s3Service;
+    private static final Logger logger = LoggerFactory.getLogger(ParentService.class);
 
+    @Transactional
     public ParentCreateResDto signUp(ParentCreateReqDto request) {
+        logger.info("logger check");
         if (isPhoneNumberDuplicate(request.getPhoneNumber())) {
             throw new IllegalArgumentException("이미 존재하는 전화번호입니다: " + request.getPhoneNumber());
         }
-
+    
         String encodedPassword = passwordEncoder.encode(request.getPassword());
         Parent parent = typeChange.parentCreateReqDtoToParent(request, encodedPassword);
+        
+        // 부모 엔티티를 먼저 저장하여 parentId 생성
+        Parent savedParent = parentRepository.save(parent);
 
-
-        if (request.getProfileImage() != null && !request.getProfileImage().isEmpty()) {
-            String fileUrl = uploadProfileImage(parent.getParentId(), request.getProfileImage());
-            parent.setProfileImg(fileUrl);
-        }
-
+        // 자녀 정보 처리
         if (request.getChildren() != null) {
             request.getChildren().forEach(childDto -> {
                 Child child = Child.builder()
                         .gender(childDto.getGender())
                         .birthDate(childDto.getBirthDate())
                         .age(LocalDate.now().getYear() - childDto.getBirthDate().getYear())
-                        .parent(parent)  // 자녀에 부모 설정
+                        .parent(savedParent)  // 자녀에 부모 설정
                         .build();
-                parent.addChild(child);
+                savedParent.addChild(child);
             });
         }
 
-        Parent savedParent = parentRepository.save(parent);
+        // 프로필 이미지 업로드 처리
+        if (request.getProfileImage() != null && !request.getProfileImage().isEmpty()) {
+            String fileUrl = uploadProfileImage(savedParent.getParentId(), request.getProfileImage());
+            savedParent.setProfileImg(fileUrl);
+        }
+
+        parentRepository.save(savedParent);
+    
         return typeChange.parentToParentCreateResDto(savedParent);
     }
+    
     
     public boolean isPhoneNumberDuplicate(String phoneNumber) {
         return parentRepository.findByPhoneNumber(phoneNumber).isPresent();
@@ -175,7 +187,9 @@ public class ParentService {
     }
     private String uploadProfileImage(Long parentId, MultipartFile file) {
         try {
+            
             String fileName = "profiles/" + parentId + "_" + file.getOriginalFilename();
+            logger.info("Saved file name: {}", fileName);
             return s3Service.uploadFile(fileName, file.getBytes());
         } catch (Exception e) {
             throw new RuntimeException("프로필 이미지 업로드 실패: " + e.getMessage(), e);
