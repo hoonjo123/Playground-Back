@@ -9,4 +9,6 @@ import com.swyp.playground.domain.note.domain.Note;
 public interface NoteRepository extends JpaRepository<Note, Long> {
     // 자신에게 온 쪽지 모두 조회
     public List<Note> findAllByTargetNickname(String targetNickname);
+
+    public List<Note> findAllByWrittenBy(String writtenBy);
 }

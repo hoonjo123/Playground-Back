@@ -1,8 +1,11 @@
 package com.swyp.playground.domain.note.service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,16 +22,34 @@ public class NoteService {
 
     @Autowired
     private ParentRepository parentRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(NoteService.class);
     
     public Note sendNote(Note note) {
         Long parentId = parentRepository.findByNickname(note.getWrittenBy()).get().getParentId();
         note.setWriterId(parentId);
+        note.setRead(false);
         return noteRepository.save(note);
     }
 
     public List<Note> getAllNotes(String email) {
         String targetNickname = parentRepository.findByEmail(email).get().getNickname();
-        return noteRepository.findAllByTargetNickname(targetNickname);
+
+        List<Note> receivedNotes = noteRepository.findAllByTargetNickname(targetNickname);
+
+        List<Note> sentNotes = noteRepository.findAllByWrittenBy(targetNickname);
+
+        for (Note note : receivedNotes) {
+            if (!note.isRead()) {
+                note.setRead(true);
+                noteRepository.save(note);
+            }
+        }
+        
+        receivedNotes.addAll(sentNotes);
+        receivedNotes.sort(Comparator.comparing(Note::getSentAt));
+
+        return receivedNotes;
     }
 
     public Note getNoteById(Long id) {

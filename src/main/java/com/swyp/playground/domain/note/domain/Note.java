@@ -30,4 +30,7 @@ public class Note {
 
     @Column(name="SENT_AT", nullable=false)
     private Date sentAt;
+    
+    @Column(name="IS_READ", nullable=false)
+    private boolean isRead;
 }
