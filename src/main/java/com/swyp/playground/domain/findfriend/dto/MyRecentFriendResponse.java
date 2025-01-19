@@ -10,6 +10,8 @@ import lombok.*;
 @Builder
 public class MyRecentFriendResponse {
 
+    private Long friendId;
+
     private String nickname;
 
     private ParentRoleType roleType;

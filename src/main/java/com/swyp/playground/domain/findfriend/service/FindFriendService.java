@@ -393,6 +393,7 @@ public class FindFriendService {
         // 중복을 제거한 Parent들을 MyRecentFriendResponse로 변환하여 반환
         return allParticipants.stream()
                 .map(p -> new MyRecentFriendResponse(
+                        p.getParentId(),
                         p.getNickname(),
                         p.getRole(),
                         p.getAddress(),
