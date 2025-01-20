@@ -1,6 +1,7 @@
 package com.swyp.playground.domain.findfriend.domain;
 
 import com.swyp.playground.domain.child.domain.Child;
+import com.swyp.playground.domain.comment.domain.Comment;
 import com.swyp.playground.domain.findfriend.dto.FindFriendRegisterRequest;
 import com.swyp.playground.domain.parent.domain.Parent;
 import jakarta.persistence.*;
@@ -58,6 +59,9 @@ public class FindFriend {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Parent owner;
+
+    @OneToMany(mappedBy = "findFriend", fetch = FetchType.EAGER)
+    private List<Comment> comments;
 
     @OneToMany(mappedBy = "findFriend")
     private List<Parent> participants = new ArrayList<>();

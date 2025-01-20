@@ -2,6 +2,9 @@ package com.swyp.playground.domain.comment.domain;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.swyp.playground.domain.findfriend.domain.FindFriend;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,8 +20,10 @@ public class Comment {
     @Column
     private Long commentId;
 
-    @Column(nullable = false)
-    private Long matchId;
+    @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name = "find_friend_id")
+    private FindFriend findFriend;
 
     @Column(nullable = false)
     private String content;

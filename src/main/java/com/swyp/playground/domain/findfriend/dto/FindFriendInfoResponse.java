@@ -7,13 +7,15 @@ import lombok.Setter;
 
 import java.util.List;
 
+import com.swyp.playground.domain.comment.domain.Comment;
+
 @NoArgsConstructor
 @Getter
 @Setter
 public class FindFriendInfoResponse {
 
     @Builder
-    public FindFriendInfoResponse(Long findFriendId, String playgroundName, String recruitmentStatus, String title, String description, String scheduleTime, FindFriendOwnerInfoResponse owner, List<FindFriendParticipantsListResponse> participants) {
+    public FindFriendInfoResponse(Long findFriendId, String playgroundName, String recruitmentStatus, String title, String description, String scheduleTime, FindFriendOwnerInfoResponse owner, List<FindFriendParticipantsListResponse> participants, List<Comment> comments) {
         this.findFriendId = findFriendId;
         this.playgroundName = playgroundName;
         this.recruitmentStatus = recruitmentStatus;
@@ -22,6 +24,7 @@ public class FindFriendInfoResponse {
         this.scheduleTime = scheduleTime;
         this.owner = owner;
         this.participants = participants;
+        this.comments = comments;
     }
 
     private Long findFriendId;
@@ -32,5 +35,6 @@ public class FindFriendInfoResponse {
     private String scheduleTime;
     private FindFriendOwnerInfoResponse owner;
     private List<FindFriendParticipantsListResponse> participants;
+    private List<Comment> comments;
 
 }

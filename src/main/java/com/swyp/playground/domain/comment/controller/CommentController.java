@@ -18,9 +18,13 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.swyp.playground.common.domain.TypeChange;
 import com.swyp.playground.domain.comment.domain.Comment;
+import com.swyp.playground.domain.comment.dto.GetCommentDto;
 import com.swyp.playground.domain.comment.dto.WriteCommentDto;
 import com.swyp.playground.domain.comment.service.CommentService;
+import com.swyp.playground.domain.findfriend.domain.FindFriend;
+import com.swyp.playground.domain.findfriend.repository.FindFriendRepository;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
@@ -37,13 +41,18 @@ public class CommentController {
     @Autowired
     private CommentService commentService;
 
+    @Autowired
+    private FindFriendRepository findFriendRepository;
+
     @PostMapping
     @SecurityRequirement(name="bearerAuth")
     public ResponseEntity<Comment> writeComment (@RequestBody WriteCommentDto writeCommentDto) {
         Comment targetComment = new Comment();
-
+        FindFriend match = findFriendRepository.findById(writeCommentDto.getMatchId())
+                                                .orElseThrow(()-> new IllegalArgumentException("Matching not found"));
+        
         targetComment.setContent(writeCommentDto.getContent());
-        targetComment.setMatchId(writeCommentDto.getMatchId());
+        targetComment.setFindFriend(match);
         targetComment.setWrittenBy(writeCommentDto.getWrittenBy());
         targetComment.setSentAt(getCurrentDateTime());
 
@@ -53,8 +62,8 @@ public class CommentController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Comment>> getAllComment() {
-        return new ResponseEntity<List<Comment>>(commentService.getAllComments(), HttpStatus.OK);
+    public ResponseEntity<List<GetCommentDto>> getAllComment() {
+        return new ResponseEntity<List<GetCommentDto>>(commentService.getAllComments(), HttpStatus.OK);
     }
 
     @GetMapping
@@ -63,7 +72,7 @@ public class CommentController {
     }
 
     @GetMapping("/match")
-    public ResponseEntity<List<Comment>> getAllCommentByMatchId(@RequestParam Long id) {
+    public ResponseEntity<List<GetCommentDto>> getAllCommentByMatchId(@RequestParam Long id) {
         return ResponseEntity.ok(commentService.getAllByMatchId(id));
     }
 

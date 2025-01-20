@@ -2,14 +2,17 @@ package com.swyp.playground.domain.comment.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.swyp.playground.domain.comment.domain.Comment;
+import com.swyp.playground.domain.comment.dto.GetCommentDto;
 import com.swyp.playground.domain.comment.dto.WriteCommentDto;
 import com.swyp.playground.domain.comment.repository.CommentRepository;
 import com.swyp.playground.domain.parent.repository.ParentRepository;
+import com.swyp.playground.common.domain.TypeChange;
 
 
 @Service
@@ -21,18 +24,24 @@ public class CommentService {
     @Autowired
     private ParentRepository parentRepository;
 
+    private TypeChange typeChange;
+
     public Comment writeComment(Comment comment) {
         Long parentId = parentRepository.findByNickname(comment.getWrittenBy()).get().getParentId();
         comment.setWriterId(parentId);
         return commentRepository.save(comment);
     }
 
-    public List<Comment> getAllComments() {
-        return commentRepository.findAll();
+    public List<GetCommentDto> getAllComments() {
+        return commentRepository.findAll()
+                                .stream().map(typeChange::getCommentDto)
+                                .collect(Collectors.toList());
     }
 
-    public List<Comment> getAllByMatchId(Long matchId) {
-        return commentRepository.findAllByMatchId(matchId);
+    public List<GetCommentDto> getAllByMatchId(Long findFriendId) {
+        return commentRepository.findAllByFindFriend_FindFriendId(findFriendId)
+                                .stream().map(typeChange::getCommentDto)
+                                .collect(Collectors.toList());
     }
 
     public Optional<Comment> getComment(Long id) {

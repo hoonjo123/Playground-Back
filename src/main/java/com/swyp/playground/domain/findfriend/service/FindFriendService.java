@@ -1,5 +1,7 @@
 package com.swyp.playground.domain.findfriend.service;
 
+import com.swyp.playground.domain.comment.domain.Comment;
+import com.swyp.playground.domain.comment.repository.CommentRepository;
 import com.swyp.playground.domain.findfriend.domain.*;
 import com.swyp.playground.domain.findfriend.dto.*;
 import com.swyp.playground.domain.findfriend.repository.FindFriendRepository;
@@ -9,6 +11,8 @@ import com.swyp.playground.domain.parent.domain.Parent;
 import com.swyp.playground.domain.parent.repository.ParentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -35,6 +39,8 @@ public class FindFriendService {
     private final PlayHistoryRepository playHistoryRepository;
 
     private final ParticipationHistoryRepository participationHistoryRepository;
+
+    private final CommentRepository commentRepository;
 
 
     //놀이터 친구 모집글 목록 반환
@@ -76,6 +82,8 @@ public class FindFriendService {
 
         Parent owner;
         List<Parent> participants;
+        Pageable pageable = PageRequest.of(0, 3);
+        List<Comment> comments = commentRepository.findTop3ByFindFriendId(findFriendId, pageable);
 
         // 모집글 상태가 COMPLETE라면 PlayHistory에서 데이터를 가져옴
         if (findFriend.getStatus() == RecruitmentStatus.COMPLETE) {
@@ -124,6 +132,7 @@ public class FindFriendService {
                         )
                         .toList()
                 )
+                .comments(comments)
                 .build();
     }
 
@@ -291,6 +300,8 @@ public class FindFriendService {
 
         if("participate".equalsIgnoreCase(action.trim())){
             Optional<FindFriend> ownerParent = findFriendRepository.findByOwner_ParentId(parent.getParentId());
+
+            
             if(ownerParent.isPresent())
                 throw new IllegalArgumentException("이미 만든 친구 모집글이 있습니다.");
 

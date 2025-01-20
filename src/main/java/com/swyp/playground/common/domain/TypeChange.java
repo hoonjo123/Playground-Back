@@ -2,6 +2,8 @@ package com.swyp.playground.common.domain;
 
 import com.swyp.playground.domain.child.domain.Child;
 import com.swyp.playground.domain.child.dto.req.ChildUpdateReqDto;
+import com.swyp.playground.domain.comment.domain.Comment;
+import com.swyp.playground.domain.comment.dto.GetCommentDto;
 import com.swyp.playground.domain.parent.domain.Parent;
 import com.swyp.playground.domain.parent.dto.req.ParentCreateReqDto;
 import com.swyp.playground.domain.parent.dto.res.ParentCreateResDto;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -71,5 +74,21 @@ public class TypeChange {
         if (dto.getBirthDate() != null) child.setBirthDate(dto.getBirthDate());
         if (dto.getAge() != null) child.setAge(dto.getAge());
     }
+    
+    // Comment -> GetCommentDto 변환환
+    public GetCommentDto getCommentDto(Comment comment) {
+        return GetCommentDto.builder()
+                            .commentId(comment.getCommentId())
+                            .matchId(comment.getFindFriend().getFindFriendId())
+                            .content(comment.getContent())
+                            .writtenBy(comment.getWrittenBy())
+                            .writerId(comment.getWriterId())
+                            .sentAt(comment.getSentAt())
+                            .build();
+    }
 
+    public List<GetCommentDto> convertGetCommentDtoList(List<Comment> comments) {
+        return comments.stream().map(this::getCommentDto)
+                                .collect(Collectors.toList());
+    }
 }
