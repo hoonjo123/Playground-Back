@@ -4,18 +4,26 @@ import com.swyp.playground.domain.child.domain.Child;
 import com.swyp.playground.domain.child.dto.req.ChildUpdateReqDto;
 import com.swyp.playground.domain.comment.domain.Comment;
 import com.swyp.playground.domain.comment.dto.GetCommentDto;
+import com.swyp.playground.domain.comment.service.CommentService;
 import com.swyp.playground.domain.parent.domain.Parent;
 import com.swyp.playground.domain.parent.dto.req.ParentCreateReqDto;
 import com.swyp.playground.domain.parent.dto.res.ParentCreateResDto;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
 public class TypeChange {
+
+    private static final Logger logger = LoggerFactory.getLogger(TypeChange.class);
 
     public Parent parentCreateReqDtoToParent(ParentCreateReqDto dto, String encodedPassword) {
         return Parent.builder()
@@ -76,19 +84,34 @@ public class TypeChange {
     }
     
     // Comment -> GetCommentDto 변환환
-    public GetCommentDto getCommentDto(Comment comment) {
-        return GetCommentDto.builder()
-                            .commentId(comment.getCommentId())
-                            .matchId(comment.getFindFriend().getFindFriendId())
-                            .content(comment.getContent())
-                            .writtenBy(comment.getWrittenBy())
-                            .writerId(comment.getWriterId())
-                            .sentAt(comment.getSentAt())
-                            .build();
+    public Optional<GetCommentDto> getCommentDto(Comment comment) {
+        if (comment == null) {
+            return Optional.empty(); // comment가 null일 경우 빈 Optional 반환
+        } else {
+            return Optional.of(GetCommentDto.builder()
+                        .commentId(comment.getCommentId())
+                        .matchId(comment.getFindFriend().getFindFriendId())
+                        .content(comment.getContent())
+                        .writtenBy(comment.getWrittenBy())
+                        .writerId(comment.getWriterId())
+                        .sentAt(comment.getSentAt())
+                        .build());
+        }
+        
     }
 
     public List<GetCommentDto> convertGetCommentDtoList(List<Comment> comments) {
-        return comments.stream().map(this::getCommentDto)
-                                .collect(Collectors.toList());
+        return comments.stream()
+                .filter(Objects::nonNull)
+                .map(comment -> {
+                    try {
+                        return getCommentDto(comment).orElse(null);
+                    } catch (Exception e) {
+                        logger.error("Error while converting Comment: {}", comment, e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

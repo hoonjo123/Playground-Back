@@ -36,4 +36,17 @@ public class Comment {
 
     @Column(nullable = false)
     private Date sentAt;
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "commentId=" + commentId +
+                ", findFriend=" + (findFriend != null ? findFriend.getFindFriendId() : "null") + // findFriend의 ID를 출력
+                ", content='" + content + '\'' +
+                ", writtenBy='" + writtenBy + '\'' +
+                ", writerId=" + writerId +
+                ", sentAt=" + sentAt +
+                '}';
+    }
+
 }
